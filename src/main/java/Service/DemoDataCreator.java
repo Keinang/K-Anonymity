@@ -2,6 +2,8 @@ package Service;
 
 import Model.Edge;
 import Model.Vertice;
+import UI.GraphPanel;
+import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.Random;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class DemoDataCreator {
+    private static Logger logger = Logger.getLogger(DemoDataCreator.class);
     private static final Random position = new Random();
 
     public static List<Edge> createDemoEdges(List<Vertice> vertices) {

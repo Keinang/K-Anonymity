@@ -1,4 +1,5 @@
 import UI.AppFrame;
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -11,6 +12,7 @@ public class Main {
     private static JFrame myFrame = null;
 
     public static void main(String[] args)  {
+        BasicConfigurator.configure();
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 myFrame = new AppFrame();

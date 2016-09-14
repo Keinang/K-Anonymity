@@ -2,6 +2,7 @@ package UI;
 
 import Model.Edge;
 import Model.Vertice;
+import org.apache.log4j.Logger;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
@@ -16,6 +17,7 @@ import static Service.DemoDataCreator.createDemoVertices;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class GraphPanel extends JPanel {
+    private static Logger logger = Logger.getLogger(GraphPanel.class);
     private static int POINT_SIZE = 5;
     private static Color VERTICES_COLOR = Color.blue;
     private static Color EDGE_COLOR = Color.black;
@@ -38,7 +40,7 @@ public class GraphPanel extends JPanel {
             addTable();
         }
 
-        this.setSize(1000, 1000);
+        this.setMinimumSize(new Dimension(1200, 1200));
     }
 
     private void addTable() {
@@ -108,8 +110,18 @@ public class GraphPanel extends JPanel {
                 grpahPanel.setVisible(true);
                 frame.add(grpahPanel);
                 frame.setVisible(true);
-                frame.setSize(500, 500);
+                frame.setSize(new Dimension(750, 650));
             }
         });
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(750, 650);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(750, 650);
     }
 }

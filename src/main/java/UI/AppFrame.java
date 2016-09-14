@@ -1,9 +1,12 @@
 package UI;
 
-import Model.Edge;
-import Model.Vertice;
+import Model.*;
+import Service.ExecuteManager;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 import static Service.DemoDataCreator.createDemoEdges;
@@ -14,12 +17,18 @@ import static Service.DemoDataCreator.createDemoVertices;
  */
 
 public class AppFrame extends JFrame {
-
+    private static Logger logger = Logger.getLogger(AppFrame.class);
     private static final String FRAME_TITLE = "K-Anonymity Algorithm Simulator";
     private static final String DEFAULT_VALUE = "N/A";
+    private ExecuteManager manager;
+
+    private ButtonGroup buttonGroupAlgorithms;
+    private ButtonGroup buttonGroupForK;
+    private ButtonGroup buttonGroupForDataSets;
 
     public AppFrame() {
         initUIComponents();
+        manager = new ExecuteManager();
     }
 
     @SuppressWarnings("ALL")
@@ -30,7 +39,7 @@ public class AppFrame extends JFrame {
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
         setTitle(FRAME_TITLE);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
 
         // init controls:
@@ -39,30 +48,38 @@ public class AppFrame extends JFrame {
         JLabel chooseDataSetLabel = new JLabel("Data Sets");
 
         // radio buttons for algorithms
-        ButtonGroup buttonGroupAlgorithms = new ButtonGroup();
+        buttonGroupAlgorithms = new ButtonGroup();
         JRadioButton radioButtonAlgorithms1 = new JRadioButton("K-Degree");
+        radioButtonAlgorithms1.setActionCommand(AlgoType.KDegree.toString());
         radioButtonAlgorithms1.setSelected(true);
         JRadioButton radioButtonAlgorithms2 = new JRadioButton("K-Neighborhood");
+        radioButtonAlgorithms2.setActionCommand(AlgoType.KNeighborhood.toString());
         buttonGroupAlgorithms.add(radioButtonAlgorithms1);
         buttonGroupAlgorithms.add(radioButtonAlgorithms2);
 
         // radio buttons for choosing K
-        ButtonGroup buttonGroupForK = new ButtonGroup();
+        buttonGroupForK = new ButtonGroup();
         JRadioButton radioButtonForK1 = new JRadioButton("5");
+        radioButtonForK1.setActionCommand("5");
         radioButtonForK1.setSelected(true);
         JRadioButton radioButtonForK2 = new JRadioButton("10");
+        radioButtonForK2.setActionCommand("10");
         JRadioButton radioButtonForK3 = new JRadioButton("15");
+        radioButtonForK3.setActionCommand("15");
         JRadioButton radioButtonForK4 = new JRadioButton("20");
+        radioButtonForK4.setActionCommand("20");
         buttonGroupForK.add(radioButtonForK1);
         buttonGroupForK.add(radioButtonForK2);
         buttonGroupForK.add(radioButtonForK3);
         buttonGroupForK.add(radioButtonForK4);
 
         // radio buttons for choosing Data Sets
-        ButtonGroup buttonGroupForDataSets = new ButtonGroup();
+        buttonGroupForDataSets = new ButtonGroup();
         JRadioButton radioButtonForDataSets1 = new JRadioButton("DataSet-1");
+        radioButtonForDataSets1.setActionCommand(DataSetType.DS1.toString());
         radioButtonForDataSets1.setSelected(true);
         JRadioButton radioButtonForDataSets2 = new JRadioButton("DataSet-2");
+        radioButtonForDataSets2.setActionCommand(DataSetType.DS2.toString());
         buttonGroupForDataSets.add(radioButtonForDataSets1);
         buttonGroupForDataSets.add(radioButtonForDataSets2);
 
@@ -106,10 +123,31 @@ public class AppFrame extends JFrame {
         List<Vertice> vertices = createDemoVertices();
         List<Edge> edges = createDemoEdges(vertices);
         GraphPanel beforeGraph = new GraphPanel(vertices, edges);
-        GraphPanel afterGraph = new GraphPanel(null, null);
+        List<Vertice> anonymizedVertices = createDemoVertices();
+        List<Edge> anonymizedEdges = createDemoEdges(anonymizedVertices);
+        GraphPanel afterGraph = new GraphPanel(anonymizedVertices, anonymizedEdges);
 
         JSeparator sp1 = new JSeparator();
         JSeparator sp2 = new JSeparator();
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.add("Original Graph", beforeGraph);
+        tabbedPane.add("Anonymized Graph", afterGraph);
+
+        JButton executeButton = new JButton("Execute");
+        executeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String algoTypeCommand = buttonGroupAlgorithms.getSelection().getActionCommand();
+                String kTypeCommand = buttonGroupForK.getSelection().getActionCommand();
+                String dataSetCommand = buttonGroupForDataSets.getSelection().getActionCommand();
+                logger.info(String.format("executeButton called for {Algorithm=%s, K=%s, DataSet=%s}", algoTypeCommand,  kTypeCommand, dataSetCommand));
+                InputContext inputContext = new InputContext();
+                inputContext.setAlgoTypeCommand(algoTypeCommand);
+                inputContext.setKTypeCommand(kTypeCommand);
+                inputContext.setDataSetCommand(dataSetCommand);
+                manager.execute(inputContext);
+            }
+        });
 
         // setting the Layout
         layout.setHorizontalGroup(layout.createParallelGroup()
@@ -155,87 +193,92 @@ public class AppFrame extends JFrame {
                                 .addComponent(afterEdgesRemovedLabelValue)
                                 .addComponent(afterObfuscationLeveldLabelValue)
                         )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(executeButton)
+                                .addComponent(progressBar)
+                        )
+
                 )
-                .addComponent(beforeGraph)
-                .addComponent(progressBar)
+                .addComponent(tabbedPane)
                 .addComponent(sp1)
                 .addComponent(sp2)
         );
 
         layout.setVerticalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(algorithmsLabel)
                         .addComponent(chooseKLabel)
                         .addComponent(chooseDataSetLabel)
+                        .addComponent(executeButton)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonAlgorithms1)
                         .addComponent(radioButtonForK1)
                         .addComponent(radioButtonForDataSets1)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonAlgorithms2)
                         .addComponent(radioButtonForK2)
                         .addComponent(radioButtonForDataSets2)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonForK3)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonForK4)
                 )
                 .addComponent(sp1)
                 // Panel 2:
-                .addComponent(progressBar)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(progressBar)
                         .addComponent(durationLabel)
                         .addComponent(durationLabelValue)
 
                         .addComponent(afterVerticesLabel)
                         .addComponent(afterVerticesLabelValue)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(beforeVerticesLabel)
                         .addComponent(beforeVerticesLabelValue)
 
                         .addComponent(afterVerticesAddedLabel)
                         .addComponent(afterVerticesAddedLabelValue)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(beforeEdgesLabel)
                         .addComponent(beforeEdgesLabelValue)
 
                         .addComponent(afterVerticesRemovedLabel)
                         .addComponent(afterVerticesRemovedLabelValue)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(afterEdgesLabel)
                         .addComponent(afterEdgesLabelValue)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(afterEdgesAddedLabel)
                         .addComponent(afterEdgesAddedLabelValue)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(afterEdgesRemovedLabel)
                         .addComponent(afterEdgesRemovedLabelValue)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(afterObfuscationLeveldLabel)
                         .addComponent(afterObfuscationLeveldLabelValue)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(afterObfuscationLeveldLabel)
                         .addComponent(afterObfuscationLeveldLabelValue)
                 )
                 .addComponent(sp2)
                 // graphs
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                        .addComponent(beforeGraph)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(tabbedPane)
                 )
         );
 
         pack();
-        setSize(800, 800);
+        //setSize(800, 800);
     }
 }
