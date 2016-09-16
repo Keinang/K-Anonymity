@@ -1,8 +1,7 @@
-package Service;
+package Data;
 
 import Model.Edge;
 import Model.Vertice;
-import UI.GraphPanel;
 import org.apache.log4j.Logger;
 
 import java.awt.*;

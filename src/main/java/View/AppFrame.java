@@ -1,7 +1,7 @@
-package UI;
+package View;
 
 import Model.*;
-import Service.ExecuteManager;
+import Controller.ExecuteController;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -9,8 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-import static Service.DemoDataCreator.createDemoEdges;
-import static Service.DemoDataCreator.createDemoVertices;
+import static Data.DemoDataCreator.createDemoEdges;
+import static Data.DemoDataCreator.createDemoVertices;
 
 /**
  * Created by Keinan.Gilad on 9/10/2016.
@@ -20,15 +20,14 @@ public class AppFrame extends JFrame {
     private static Logger logger = Logger.getLogger(AppFrame.class);
     private static final String FRAME_TITLE = "K-Anonymity Algorithm Simulator";
     private static final String DEFAULT_VALUE = "N/A";
-    private ExecuteManager manager;
-
+    private ExecuteController executeController;
     private ButtonGroup buttonGroupAlgorithms;
     private ButtonGroup buttonGroupForK;
     private ButtonGroup buttonGroupForDataSets;
 
     public AppFrame() {
         initUIComponents();
-        manager = new ExecuteManager();
+        executeController = new ExecuteController();
     }
 
     @SuppressWarnings("ALL")
@@ -145,7 +144,7 @@ public class AppFrame extends JFrame {
                 inputContext.setAlgoTypeCommand(algoTypeCommand);
                 inputContext.setKTypeCommand(kTypeCommand);
                 inputContext.setDataSetCommand(dataSetCommand);
-                manager.execute(inputContext);
+                executeController.execute(inputContext);
             }
         });
 

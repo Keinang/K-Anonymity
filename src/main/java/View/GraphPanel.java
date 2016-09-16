@@ -1,4 +1,4 @@
-package UI;
+package View;
 
 import Model.Edge;
 import Model.Vertice;
@@ -7,11 +7,10 @@ import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
 
-import static Service.DemoDataCreator.createDemoEdges;
-import static Service.DemoDataCreator.createDemoVertices;
+import static Data.DemoDataCreator.createDemoEdges;
+import static Data.DemoDataCreator.createDemoVertices;
 
 /**
  * Created by Keinan.Gilad on 9/10/2016.
