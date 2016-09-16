@@ -9,6 +9,11 @@ public class Edge {
     private Point x;
     private Point y;
 
+    public Edge(Point x, Point y){
+        this.x = x;
+        this.y = y;
+    }
+
     public Point getX() {
         return x;
     }

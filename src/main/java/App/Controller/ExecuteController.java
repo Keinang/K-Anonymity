@@ -3,7 +3,6 @@ package App.Controller;
 import App.Model.InputContext;
 import App.Model.ResultContext;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Component;
 
 /**
  * Created by Keinan.Gilad on 9/14/2016.

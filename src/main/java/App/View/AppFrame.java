@@ -1,6 +1,7 @@
 package App.View;
 
 import App.Controller.DataSetController;
+import App.Controller.DataSetLoaderTask;
 import App.Controller.ExecuteController;
 import App.Model.AlgoType;
 import App.Model.Edge;
@@ -9,12 +10,15 @@ import App.Model.Vertice;
 import App.Utils.DemoDataCreator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Keinan.Gilad on 9/10/2016.
@@ -41,10 +45,13 @@ public class AppFrame extends JFrame {
     private ButtonGroup buttonGroupAlgorithms;
     private ButtonGroup buttonGroupForK;
     private ButtonGroup buttonGroupForDataSets;
+    private List<JRadioButton> dataSetsRadioButtons;
+    private HashMap<String, JProgressBar> dataSetToProgressBar;
+    private List<String> dataSetsNames;
+    private GraphPanel beforeGraph;
+    private GraphPanel afterGraph;
 
     public AppFrame() {
-
-
     }
 
     @SuppressWarnings("ALL")
@@ -90,7 +97,7 @@ public class AppFrame extends JFrame {
         buttonGroupForK.add(radioButtonForK4);
 
         // radio buttons for choosing Data Sets
-        List<JRadioButton> dataSetRadioButtons = initDataSetControls();
+        initDataSetControls();
 
         // progress bar for loading the algorithm
         JProgressBar progressBar = new JProgressBar(0, 100);
@@ -129,12 +136,10 @@ public class AppFrame extends JFrame {
         JLabel afterObfuscationLeveldLabel = new JLabel("Obfuscation Level");
         JLabel afterObfuscationLeveldLabelValue = new JLabel(DEFAULT_VALUE);
 
-        List<Vertice> vertices = demoDataCreator.createDemoVertices();
-        List<Edge> edges = demoDataCreator.createDemoEdges(vertices);
-        GraphPanel beforeGraph = new GraphPanel(vertices, edges);
-        List<Vertice> anonymizedVertices = demoDataCreator.createDemoVertices();
-        List<Edge> anonymizedEdges = demoDataCreator.createDemoEdges(anonymizedVertices);
-        GraphPanel afterGraph = new GraphPanel(anonymizedVertices, anonymizedEdges);
+        //Set<Vertice> vertices = demoDataCreator.createDemoVertices();
+        //List<Edge> edges = demoDataCreator.createDemoEdges(vertices);
+        beforeGraph = new GraphPanel();
+        afterGraph = new GraphPanel();
 
         JSeparator sp1 = new JSeparator();
         JSeparator sp2 = new JSeparator();
@@ -184,9 +189,9 @@ public class AppFrame extends JFrame {
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(chooseDataSetLabel)
-                                .addComponent(dataSetRadioButtons.get(0))
-                                .addComponent(dataSetRadioButtons.get(1))
-                                .addComponent(dataSetRadioButtons.get(2))
+                                .addComponent(dataSetsRadioButtons.get(0))
+                                .addComponent(dataSetsRadioButtons.get(1))
+                                .addComponent(dataSetsRadioButtons.get(2))
 
                                 .addComponent(afterVerticesLabel)
                                 .addComponent(afterVerticesAddedLabel)
@@ -204,6 +209,9 @@ public class AppFrame extends JFrame {
                                 .addComponent(afterEdgesAddedLabelValue)
                                 .addComponent(afterEdgesRemovedLabelValue)
                                 .addComponent(afterObfuscationLeveldLabelValue)
+                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
+                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
+                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(executeButton)
@@ -226,16 +234,19 @@ public class AppFrame extends JFrame {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonAlgorithms1)
                         .addComponent(radioButtonForK1)
-                        .addComponent(dataSetRadioButtons.get(0))
+                        .addComponent(dataSetsRadioButtons.get(0))
+                        .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonAlgorithms2)
                         .addComponent(radioButtonForK2)
-                        .addComponent(dataSetRadioButtons.get(1))
+                        .addComponent(dataSetsRadioButtons.get(1))
+                        .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonForK3)
-                        .addComponent(dataSetRadioButtons.get(2))
+                        .addComponent(dataSetsRadioButtons.get(2))
+                        .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonForK4)
@@ -296,20 +307,58 @@ public class AppFrame extends JFrame {
     }
 
     private List<JRadioButton> initDataSetControls() {
-        List<JRadioButton> dataSetsRadioButtons = new ArrayList<>();
+        dataSetsNames = dataSetController.getDataSetsNames();
 
-        List<String> dataSets = dataSetController.getDataSetsNames();
+        dataSetsRadioButtons = new ArrayList<>();
+        dataSetToProgressBar = new HashMap<>();
+
         buttonGroupForDataSets = new ButtonGroup();
 
-        for (String dataSet : dataSets) {
+        for (final String dataSet : dataSetsNames) {
             JRadioButton dataSetRadioButton = new JRadioButton(dataSet);
             dataSetRadioButton.setActionCommand(dataSet);
+            dataSetRadioButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String dataSet = e.getActionCommand();
+                    HashMap<String, Vertice> vertices = dataSetController.getVerticesByDataSet(dataSet);
+                    List<Edge> edges = dataSetController.getEdgesByDataSet(dataSet);
+                    beforeGraph = new GraphPanel(vertices, edges);
+                }
+            });
 
             buttonGroupForDataSets.add(dataSetRadioButton);
             dataSetsRadioButtons.add(dataSetRadioButton);
+
+            // create the data set progress bar for loading
+            JProgressBar progressBar = new JProgressBar();
+            progressBar.setBounds(0, 0, 100, 100);
+            progressBar.setValue(0);
+            progressBar.setStringPainted(true);
+            dataSetToProgressBar.put(dataSet, progressBar);
+
+            // load the data set into persistence
+            createDataSetTask(dataSet);
         }
 
         dataSetsRadioButtons.get(0).setSelected(true);
         return dataSetsRadioButtons;
+    }
+
+    private void createDataSetTask(String dataSet) {
+        DataSetLoaderTask task = new DataSetLoaderTask(dataSet, dataSetController);
+        task.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("progress".equals(evt.getPropertyName())) {
+                    String dataSet = ((DataSetLoaderTask)evt.getSource()).getDataSetName();
+                    int progress = (Integer) evt.getNewValue();
+                    JProgressBar progressBar = dataSetToProgressBar.get(dataSet);
+                    progressBar.setValue(progress);
+                    logger.debug("Progress DataSet Event: " + dataSet + " Progress:" + progress);
+                }
+            }
+        });
+        task.execute();
     }
 }

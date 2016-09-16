@@ -6,11 +6,13 @@ import App.Utils.DemoDataCreator;
 import org.apache.log4j.Logger;
 import org.jdesktop.swingx.JXTable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -22,7 +24,7 @@ public class GraphPanel extends JPanel {
     private static Color VERTICES_COLOR = Color.blue;
     private static Color EDGE_COLOR = Color.black;
 
-    private List<Vertice> vertices = null;
+    private HashMap<String, Vertice> vertices = null;
     private List<Edge> edges = null;
 
     @Autowired
@@ -31,7 +33,7 @@ public class GraphPanel extends JPanel {
     protected GraphPanel() {
     }
 
-    protected GraphPanel(List<Vertice> vertices, List<Edge> edges) {
+    protected GraphPanel(HashMap<String, Vertice> vertices, List<Edge> edges) {
         super();
         // set model
         this.vertices = vertices;
@@ -64,11 +66,16 @@ public class GraphPanel extends JPanel {
 
         if (vertices != null) {
             rows = new Object[this.vertices.size()][2];
-            for (int i = 0; i < vertices.size(); i++) {
-                Vertice vertice = vertices.get(i);
+            Set<String> verticesKeys = this.vertices.keySet();
+            Iterator<String> verticesKeysIter = verticesKeys.iterator();
+            int i = 0;
+            while (verticesKeysIter.hasNext()) {
+                String verticeKey = verticesKeysIter.next();
+                Vertice vertice = vertices.get(verticeKey);
 
                 rows[i][0] = String.format("%s (%s, %s)", vertice.getName(), vertice.x, vertice.y);
                 rows[i][1] = countVerticeInEdge(vertice.x, vertice.y);
+                i++;
             }
         }
         return rows;
@@ -92,7 +99,7 @@ public class GraphPanel extends JPanel {
         if (vertices != null) {
             g.setColor(VERTICES_COLOR);
 
-            for (Vertice p : vertices) {
+            for (Vertice p : vertices.values()) {
                 g.drawOval(p.x, p.y, POINT_SIZE, POINT_SIZE);
                 g.drawString(p.getName(), p.x, p.y);
             }
@@ -111,7 +118,7 @@ public class GraphPanel extends JPanel {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 JFrame frame = new JFrame();
-                List<Vertice> vertices = demoDataCreatorLocal.createDemoVertices();
+                HashMap<String, Vertice> vertices = demoDataCreatorLocal.createDemoVertices();
                 List<Edge> edges = demoDataCreatorLocal.createDemoEdges(vertices);
                 GraphPanel grpahPanel = new GraphPanel(vertices, edges);
                 grpahPanel.setVisible(true);
