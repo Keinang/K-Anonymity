@@ -30,7 +30,7 @@ import java.util.List;
 public class jungGraphPanel extends JPanel {
     private static Logger logger = Logger.getLogger(jungGraphPanel.class);
 
-    public static final String VERTICE = "Vertice";
+    public static final String VERTICE = "Vertex ID";
     public static final String DEGREE = "Degree";
     private Graph m_graph;
     private Layout mVisualizer;
