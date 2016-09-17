@@ -27,13 +27,17 @@ public class DataSetController {
 
     @Autowired
     private FileUtil fileUtils;
-    private List<String> dataSetsNames = Arrays.asList(FACEBOOK_CIRCLES, WIKIPEDIA_VOTING);//, TWITTER_CIRCLES);
+    private List<String> dataSetsNames = new ArrayList<>();
     private HashMap<String, String> dataSetNameToFileName;
     private HashMap<String, HashMap<String, Vertex>> dataSetToVertices;
     private HashMap<String, List<EdgeWrapper>> dataSetToEdges;
     private HashMap<String, Integer> dataSetToProgress;
 
     public DataSetController() {
+        dataSetsNames.add(FACEBOOK_CIRCLES);
+        dataSetsNames.add(WIKIPEDIA_VOTING);
+        //dataSetsNames.add(TWITTER_CIRCLES);
+
         dataSetNameToFileName = new HashMap<>();
         dataSetNameToFileName.put(FACEBOOK_CIRCLES, FACEBOOK_CIRCLES_FILE);
         dataSetNameToFileName.put(WIKIPEDIA_VOTING, WIKI_VOTE_FILE);

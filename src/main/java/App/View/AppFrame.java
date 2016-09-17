@@ -44,7 +44,6 @@ public class AppFrame extends JFrame {
     private ButtonGroup buttonGroupForDataSets;
     private List<JRadioButton> dataSetsRadioButtons;
     private HashMap<String, JProgressBar> dataSetToProgressBar;
-    private jungGraphPanel afterGraph;
     private JTabbedPane tabbedPane;
 
     public AppFrame() {
@@ -101,7 +100,9 @@ public class AppFrame extends JFrame {
         executeProgressBar.setBounds(0, 0, 100, 100);
         executeProgressBar.setValue(0);
         executeProgressBar.setStringPainted(true);
-        executeProgressBar.setMaximumSize(new Dimension(130, 140));
+        executeProgressBar.setMaximumSize(new Dimension(130, 25));
+        executeProgressBar.setPreferredSize(new Dimension(130, 25));
+        executeProgressBar.setSize(new Dimension(130, 25));
 
         // values for after running the algorithm
         JLabel durationLabel = new JLabel("Duration");
@@ -135,12 +136,9 @@ public class AppFrame extends JFrame {
         JLabel afterObfuscationLeveldLabelValue = new JLabel(DEFAULT_VALUE);
 
         JSeparator sp1 = new JSeparator();
-        JSeparator sp2 = new JSeparator();
 
         // graphs
-        afterGraph = new jungGraphPanel();
         tabbedPane = new JTabbedPane();
-        tabbedPane.add(ANONYMIZED_GRAPH, afterGraph);
 
         // execute button
         JButton executeButton = new JButton("Execute");
@@ -161,16 +159,25 @@ public class AppFrame extends JFrame {
         });
 
         // setting the Layout
-        layout.setHorizontalGroup(layout.createParallelGroup()
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(algorithmsLabel)
                                 .addComponent(radioButtonAlgorithms1)
                                 .addComponent(radioButtonAlgorithms2)
+
+                                // level 2
+                                .addComponent(executeButton)
                                 .addComponent(durationLabel)
                                 .addComponent(beforeVerticesLabel)
                                 .addComponent(beforeEdgesLabel)
-                                .addComponent(executeButton)
+                                .addComponent(afterVerticesLabel)
+                                .addComponent(afterVerticesAddedLabel)
+                                .addComponent(afterVerticesRemovedLabel)
+                                .addComponent(afterEdgesLabel)
+                                .addComponent(afterEdgesAddedLabel)
+                                .addComponent(afterEdgesRemovedLabel)
+                                .addComponent(afterObfuscationLeveldLabel)
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(chooseKLabel)
@@ -179,26 +186,11 @@ public class AppFrame extends JFrame {
                                 .addComponent(radioButtonForK3)
                                 .addComponent(radioButtonForK4)
 
+                                // level 2
+                                .addComponent(executeProgressBar)
                                 .addComponent(durationLabelValue)
                                 .addComponent(beforeVerticesLabelValue)
                                 .addComponent(beforeEdgesLabelValue)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(chooseDataSetLabel)
-                                .addComponent(dataSetsRadioButtons.get(0))
-                                .addComponent(dataSetsRadioButtons.get(1))
-                                //.addComponent(dataSetsRadioButtons.get(2))
-
-                                .addComponent(afterVerticesLabel)
-                                .addComponent(afterVerticesAddedLabel)
-                                .addComponent(afterVerticesRemovedLabel)
-                                .addComponent(afterEdgesLabel)
-                                .addComponent(afterEdgesAddedLabel)
-                                .addComponent(afterEdgesRemovedLabel)
-                                .addComponent(afterObfuscationLeveldLabel)
-                                .addComponent(executeProgressBar)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(afterVerticesLabelValue)
                                 .addComponent(afterVerticesAddedLabelValue)
                                 .addComponent(afterVerticesRemovedLabelValue)
@@ -206,94 +198,112 @@ public class AppFrame extends JFrame {
                                 .addComponent(afterEdgesAddedLabelValue)
                                 .addComponent(afterEdgesRemovedLabelValue)
                                 .addComponent(afterObfuscationLeveldLabelValue)
+                        )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(chooseDataSetLabel)
+                                .addComponent(dataSetsRadioButtons.get(0))
+                                .addComponent(dataSetsRadioButtons.get(1))
+                        )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
-                                //.addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
+                        )
+                        .addComponent(tabbedPane)
+                )
+                .addComponent(sp1)
+        );
+
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(algorithmsLabel)
+                                        .addComponent(radioButtonAlgorithms1)
+                                        .addComponent(radioButtonAlgorithms2)
+                                )
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(chooseKLabel)
+                                        .addComponent(radioButtonForK1)
+                                        .addComponent(radioButtonForK2)
+                                        .addComponent(radioButtonForK3)
+                                        .addComponent(radioButtonForK4)
+                                )
+
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(chooseDataSetLabel)
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(dataSetsRadioButtons.get(0))
+                                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(dataSetsRadioButtons.get(1))
+                                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
+                                        )
+                                )
+                        )
+                        .addComponent(sp1)
+                        // Panel 2:
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(executeButton)
+                                                .addComponent(executeProgressBar)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(durationLabel)
+                                                .addComponent(durationLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(beforeVerticesLabel)
+                                                .addComponent(beforeVerticesLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(beforeEdgesLabel)
+                                                .addComponent(beforeEdgesLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(afterVerticesLabel)
+                                                .addComponent(afterVerticesLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(afterVerticesAddedLabel)
+                                                .addComponent(afterVerticesAddedLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(afterVerticesRemovedLabel)
+                                                .addComponent(afterVerticesRemovedLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(afterEdgesLabel)
+                                                .addComponent(afterEdgesLabelValue)
+                                        )
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(afterEdgesAddedLabel)
+                                                .addComponent(afterEdgesAddedLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(afterEdgesRemovedLabel)
+                                                .addComponent(afterEdgesRemovedLabelValue)
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(afterObfuscationLeveldLabel)
+                                                .addComponent(afterObfuscationLeveldLabelValue)
+                                        )
+                                )
                         )
                 )
                 .addComponent(tabbedPane)
-                .addComponent(sp1)
-                .addComponent(sp2)
-        );
-
-        layout.setVerticalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(algorithmsLabel)
-                        .addComponent(chooseKLabel)
-                        .addComponent(chooseDataSetLabel)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(radioButtonAlgorithms1)
-                        .addComponent(radioButtonForK1)
-                        .addComponent(dataSetsRadioButtons.get(0))
-                        .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(radioButtonAlgorithms2)
-                        .addComponent(radioButtonForK2)
-                        .addComponent(dataSetsRadioButtons.get(1))
-                        .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(radioButtonForK3)
-                        //.addComponent(dataSetsRadioButtons.get(2))
-                        //.addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(radioButtonForK4)
-                )
-                .addComponent(sp1)
-                // Panel 2:
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(executeButton)
-                        .addComponent(executeProgressBar)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(durationLabel)
-                        .addComponent(durationLabelValue)
-
-                        .addComponent(afterVerticesLabel)
-                        .addComponent(afterVerticesLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(beforeVerticesLabel)
-                        .addComponent(beforeVerticesLabelValue)
-
-                        .addComponent(afterVerticesAddedLabel)
-                        .addComponent(afterVerticesAddedLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(beforeEdgesLabel)
-                        .addComponent(beforeEdgesLabelValue)
-
-                        .addComponent(afterVerticesRemovedLabel)
-                        .addComponent(afterVerticesRemovedLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(afterEdgesLabel)
-                        .addComponent(afterEdgesLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(afterEdgesAddedLabel)
-                        .addComponent(afterEdgesAddedLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(afterEdgesRemovedLabel)
-                        .addComponent(afterEdgesRemovedLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(afterObfuscationLeveldLabel)
-                        .addComponent(afterObfuscationLeveldLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(afterObfuscationLeveldLabel)
-                        .addComponent(afterObfuscationLeveldLabelValue)
-                )
-                .addComponent(sp2)
-                // graphs
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(tabbedPane)
-                )
         );
 
         pack();
@@ -319,7 +329,9 @@ public class AppFrame extends JFrame {
             progressBar.setBounds(0, 0, 100, 100);
             progressBar.setValue(0);
             progressBar.setStringPainted(true);
-            progressBar.setMaximumSize(new Dimension(130, 140));
+            progressBar.setMaximumSize(new Dimension(130, 25));
+            progressBar.setPreferredSize(new Dimension(130, 25));
+            progressBar.setSize(new Dimension(130, 25));
             dataSetToProgressBar.put(dataSet, progressBar);
 
             // load the data set into persistence

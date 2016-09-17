@@ -1,20 +1,25 @@
 package App.View;
 
 import App.Utils.DemoDataCreator;
+import a.a.a.E;
+import a.a.b.b.V;
 import edu.uci.ics.jung.graph.Edge;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.Vertex;
 import edu.uci.ics.jung.graph.decorators.DefaultToolTipFunction;
+import edu.uci.ics.jung.graph.decorators.EdgeShape;
 import edu.uci.ics.jung.graph.impl.SparseGraph;
-import edu.uci.ics.jung.graph.impl.UndirectedSparseGraph;
+import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.*;
 import edu.uci.ics.jung.visualization.Renderer;
-import edu.uci.ics.jung.visualization.contrib.CircleLayout;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import org.apache.commons.collections15.Predicate;
+import org.apache.log4j.Logger;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.List;
 
@@ -23,6 +28,8 @@ import java.util.List;
  * Created by Keinan.Gilad on 9/17/2016.
  */
 public class jungGraphPanel extends JPanel {
+    private static Logger logger = Logger.getLogger(jungGraphPanel.class);
+
     public static final String VERTICE = "Vertice";
     public static final String DEGREE = "Degree";
     private Graph m_graph;
@@ -35,10 +42,11 @@ public class jungGraphPanel extends JPanel {
         m_graph = new SparseGraph();//UndirectedSparseGraph/SparseGraph
         mVisualizer = new FRLayout(m_graph); // CircleLayout/FRLayout
         mRenderer = new PluggableRenderer();
+        m_graphmouse = new DefaultModalGraphMouse();
         mVizViewer = new VisualizationViewer(mVisualizer, mRenderer);
+        mVizViewer.getRenderingHints().remove(RenderingHints.KEY_ANTIALIASING);
         mVizViewer.setBackground(Color.WHITE);
-        //m_graphmouse = new DefaultModalGraphMouse();
-        //mVizViewer.setGraphMouse(m_graphmouse);
+        mVizViewer.setGraphMouse(m_graphmouse);
         /*mVizViewer.setToolTipFunction(new DefaultToolTipFunction() {
             public String getToolTipText(Vertex v) {
                 return v.toString();
@@ -61,6 +69,7 @@ public class jungGraphPanel extends JPanel {
         this.setPreferredSize(new Dimension(1000, 1000));
         this.setSize(new Dimension(1000, 1000));
         add(mVizViewer);
+        mVizViewer.scale(1.5, 1.5);
     }
 
     public void addTable() {
@@ -85,7 +94,7 @@ public class jungGraphPanel extends JPanel {
                 Vertex verticeKey = verticesKeysIter.next();
 
                 rows[i][0] = String.format("%s", verticeKey);
-                rows[i][1] = verticeKey.getIncidentEdges().size();
+                rows[i][1] = verticeKey.degree();
                 i++;
             }
         }
@@ -102,7 +111,11 @@ public class jungGraphPanel extends JPanel {
 
     public void addEdges(List<Edge> edges) {
         for (int i = 0; i < edges.size(); i++) {
-            m_graph.addEdge(edges.get(i));
+            try {
+                m_graph.addEdge(edges.get(i));
+            } catch (IllegalArgumentException e) {
+                logger.error(e);
+            }
         }
 
         mVisualizer.restart();
@@ -126,7 +139,7 @@ public class jungGraphPanel extends JPanel {
         jf.getContentPane().add(jungGraphPanel);
 
         //set some size
-        jf.setSize(700, 500);
+        jf.setSize(1200, 1200);
 
         //do something when click on x
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
