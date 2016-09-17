@@ -1,13 +1,11 @@
 package App.View;
 
 import App.Controller.DataSetController;
-import App.Controller.DataSetLoaderTask;
 import App.Controller.ExecuteController;
 import App.Model.AlgoType;
-import App.Model.Edge;
 import App.Model.InputContext;
-import App.Model.Vertice;
-import App.Utils.DemoDataCreator;
+import App.UITasks.DataSetLoaderTask;
+import App.UITasks.GraphPanelLoaderTask;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,17 +38,14 @@ public class AppFrame extends JFrame {
     @Autowired
     private DataSetController dataSetController;
 
-    @Autowired
-    private DemoDataCreator demoDataCreator;
-
+    private List<String> dataSetsNames;
     private ButtonGroup buttonGroupAlgorithms;
     private ButtonGroup buttonGroupForK;
     private ButtonGroup buttonGroupForDataSets;
     private List<JRadioButton> dataSetsRadioButtons;
     private HashMap<String, JProgressBar> dataSetToProgressBar;
-    private List<String> dataSetsNames;
-    private GraphPanel beforeGraph;
-    private GraphPanel afterGraph;
+    private jungGraphPanel afterGraph;
+    private JTabbedPane tabbedPane;
 
     public AppFrame() {
     }
@@ -66,7 +61,6 @@ public class AppFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        //setUndecorated(true);
 
         // init controls:
         JLabel algorithmsLabel = new JLabel(ALGORITHMS);
@@ -107,7 +101,7 @@ public class AppFrame extends JFrame {
         executeProgressBar.setBounds(0, 0, 100, 100);
         executeProgressBar.setValue(0);
         executeProgressBar.setStringPainted(true);
-        executeProgressBar.setMaximumSize(new Dimension(130,140));
+        executeProgressBar.setMaximumSize(new Dimension(130, 140));
 
         // values for after running the algorithm
         JLabel durationLabel = new JLabel("Duration");
@@ -140,18 +134,15 @@ public class AppFrame extends JFrame {
         JLabel afterObfuscationLeveldLabel = new JLabel("Obfuscation Level");
         JLabel afterObfuscationLeveldLabelValue = new JLabel(DEFAULT_VALUE);
 
-        //Set<Vertice> vertices = demoDataCreator.createDemoVertices();
-        //List<Edge> edges = demoDataCreator.createDemoEdges(vertices);
-        beforeGraph = new GraphPanel();
-        afterGraph = new GraphPanel();
-
         JSeparator sp1 = new JSeparator();
         JSeparator sp2 = new JSeparator();
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add(ORIGINAL_GRAPH, beforeGraph);
+        // graphs
+        afterGraph = new jungGraphPanel();
+        tabbedPane = new JTabbedPane();
         tabbedPane.add(ANONYMIZED_GRAPH, afterGraph);
 
+        // execute button
         JButton executeButton = new JButton("Execute");
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -196,7 +187,7 @@ public class AppFrame extends JFrame {
                                 .addComponent(chooseDataSetLabel)
                                 .addComponent(dataSetsRadioButtons.get(0))
                                 .addComponent(dataSetsRadioButtons.get(1))
-                                .addComponent(dataSetsRadioButtons.get(2))
+                                //.addComponent(dataSetsRadioButtons.get(2))
 
                                 .addComponent(afterVerticesLabel)
                                 .addComponent(afterVerticesAddedLabel)
@@ -217,7 +208,7 @@ public class AppFrame extends JFrame {
                                 .addComponent(afterObfuscationLeveldLabelValue)
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
-                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
+                                //.addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                         )
                 )
                 .addComponent(tabbedPane)
@@ -245,8 +236,8 @@ public class AppFrame extends JFrame {
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonForK3)
-                        .addComponent(dataSetsRadioButtons.get(2))
-                        .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
+                        //.addComponent(dataSetsRadioButtons.get(2))
+                        //.addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonForK4)
@@ -319,15 +310,6 @@ public class AppFrame extends JFrame {
         for (final String dataSet : dataSetsNames) {
             JRadioButton dataSetRadioButton = new JRadioButton(dataSet);
             dataSetRadioButton.setActionCommand(dataSet);
-            dataSetRadioButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String dataSet = e.getActionCommand();
-                    HashMap<String, Vertice> vertices = dataSetController.getVerticesByDataSet(dataSet);
-                    List<Edge> edges = dataSetController.getEdgesByDataSet(dataSet);
-                    beforeGraph = new GraphPanel(vertices, edges);
-                }
-            });
 
             buttonGroupForDataSets.add(dataSetRadioButton);
             dataSetsRadioButtons.add(dataSetRadioButton);
@@ -337,7 +319,7 @@ public class AppFrame extends JFrame {
             progressBar.setBounds(0, 0, 100, 100);
             progressBar.setValue(0);
             progressBar.setStringPainted(true);
-            progressBar.setMaximumSize(new Dimension(130,140));
+            progressBar.setMaximumSize(new Dimension(130, 140));
             dataSetToProgressBar.put(dataSet, progressBar);
 
             // load the data set into persistence
@@ -353,12 +335,28 @@ public class AppFrame extends JFrame {
         task.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if ("progress".equals(evt.getPropertyName())) {
-                    String dataSet = ((DataSetLoaderTask) evt.getSource()).getDataSetName();
+                String propertyName = evt.getPropertyName();
+                String dataSet = ((DataSetLoaderTask) evt.getSource()).getDataSetName();
+                if ("progress".equals(propertyName)) {
+                    // update the progress bar with recent value
                     int progress = (Integer) evt.getNewValue();
                     JProgressBar progressBar = dataSetToProgressBar.get(dataSet);
                     progressBar.setValue(progress);
-                    logger.debug("Progress DataSet Event: " + dataSet + " Progress:" + progress);
+                    //logger.debug("Progress DataSet Event: " + dataSet + " Progress:" + progress);
+                } else if ("done".equals(propertyName)) {
+                    GraphPanelLoaderTask task = new GraphPanelLoaderTask(dataSet, dataSetController);
+                    task.addPropertyChangeListener(new PropertyChangeListener() {
+
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            String dataSet = ((GraphPanelLoaderTask) evt.getSource()).getDataSetName();
+                            if ("done".equals(evt.getPropertyName())) {
+                                logger.debug("Done build graph: " + dataSet);
+                                tabbedPane.add(ORIGINAL_GRAPH + " for " + dataSet, (Component) evt.getNewValue());
+                            }
+                        }
+                    });
+                    task.execute();
                 }
             }
         });

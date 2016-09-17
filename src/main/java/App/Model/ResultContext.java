@@ -1,5 +1,8 @@
 package App.Model;
 
+import edu.uci.ics.jung.graph.Edge;
+import edu.uci.ics.jung.graph.Vertex;
+
 import java.util.List;
 
 /**
@@ -7,8 +10,8 @@ import java.util.List;
  */
 public class ResultContext {
 
-    private List<Vertice> beforeVertices;
-    private List<Vertice> afterVertices;
+    private List<Vertex> beforeVertices;
+    private List<Vertex> afterVertices;
     private List<Edge> beforeEdges;
     private List<Edge> afterEdges;
 
@@ -23,19 +26,19 @@ public class ResultContext {
     private String afterEdgesRemovedLabelValue;
     private String afterObfuscationLeveldLabelValue;
 
-    public List<Vertice> getBeforeVertices() {
+    public List<Vertex> getBeforeVertices() {
         return beforeVertices;
     }
 
-    public void setBeforeVertices(List<Vertice> beforeVertices) {
+    public void setBeforeVertices(List<Vertex> beforeVertices) {
         this.beforeVertices = beforeVertices;
     }
 
-    public List<Vertice> getAfterVertices() {
+    public List<Vertex> getAfterVertices() {
         return afterVertices;
     }
 
-    public void setAfterVertices(List<Vertice> afterVertices) {
+    public void setAfterVertices(List<Vertex> afterVertices) {
         this.afterVertices = afterVertices;
     }
 

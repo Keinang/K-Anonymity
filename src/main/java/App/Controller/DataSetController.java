@@ -1,13 +1,15 @@
 package App.Controller;
 
-import App.Model.Edge;
-import App.Model.Vertice;
+import App.Model.EdgeWrapper;
 import App.Utils.FileUtil;
+import edu.uci.ics.jung.graph.Vertex;
+import edu.uci.ics.jung.graph.impl.SparseVertex;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -25,11 +27,10 @@ public class DataSetController {
 
     @Autowired
     private FileUtil fileUtils;
-    private static final Random position = new Random();
-    private List<String> dataSetsNames = Arrays.asList(FACEBOOK_CIRCLES, WIKIPEDIA_VOTING, TWITTER_CIRCLES);
+    private List<String> dataSetsNames = Arrays.asList(FACEBOOK_CIRCLES, WIKIPEDIA_VOTING);//, TWITTER_CIRCLES);
     private HashMap<String, String> dataSetNameToFileName;
-    private HashMap<String, HashMap<String, Vertice>> dataSetToVertices;
-    private HashMap<String, List<Edge>> dataSetToEdges;
+    private HashMap<String, HashMap<String, Vertex>> dataSetToVertices;
+    private HashMap<String, List<EdgeWrapper>> dataSetToEdges;
     private HashMap<String, Integer> dataSetToProgress;
 
     public DataSetController() {
@@ -52,9 +53,9 @@ public class DataSetController {
         String fileName = dataSetNameToFileName.get(dataSet);
         List<String> values = fileUtils.loadDataSet(fileName);
 
-        HashMap<String, Vertice> verticeNameToVertice = new HashMap<>();
-        List<Edge> edges = new ArrayList<>();
-        logger.debug("Start creating data set model for:" + dataSet);
+        HashMap<String, Vertex> verticeNameToVertice = new HashMap<>();
+        List<EdgeWrapper> edges = new ArrayList<>();
+        logger.debug("Start load DataSet:" + dataSet);
 
         int size = values.size();
         for (int i = 0; i < size; i++) {
@@ -62,11 +63,13 @@ public class DataSetController {
             // split by spaces
             String[] valueISplits = valueI.split("\\s+");
             // taking only the first two (as this is in my data sets)
+            if (valueISplits[0].startsWith("#")) {
+                continue;
+            }
 
-            Vertice v0 = createVertice(valueISplits[0], verticeNameToVertice);
-            Vertice v1 = createVertice(valueISplits[1], verticeNameToVertice);
-
-            edges.add(new Edge(v0.getLocation(), v1.getLocation()));
+            Vertex v0 = createVertice(valueISplits[0], verticeNameToVertice);
+            Vertex v1 = createVertice(valueISplits[1], verticeNameToVertice);
+            edges.add(new EdgeWrapper(v0, v1));
 
             // done iteration
             int progress = ((i * 100) / size) + 1;
@@ -78,16 +81,12 @@ public class DataSetController {
         dataSetToProgress.put(dataSet, 100);
         dataSetToVertices.put(dataSet, verticeNameToVertice);
         dataSetToEdges.put(dataSet, edges);
-        logger.debug("Done creating data set model for:" + dataSet);
+        logger.debug("Done load DataSet:" + dataSet);
     }
 
-    private Vertice createVertice(String name, HashMap<String, Vertice> vertices) {
-        if (!vertices.containsKey(name)){
-
-            Point point = new Point();
-            point.x = position.nextInt(600);
-            point.y = position.nextInt(600);
-            Vertice v = new Vertice(name, point);
+    private Vertex createVertice(String name, HashMap<String, Vertex> vertices) {
+        if (!vertices.containsKey(name)) {
+            Vertex v = new SparseVertex();
             vertices.put(name, v);
         }
 
@@ -98,11 +97,11 @@ public class DataSetController {
         return dataSetToProgress.get(dataSet);
     }
 
-    public HashMap<String, Vertice> getVerticesByDataSet(String dataSet) {
+    public HashMap<String, Vertex> getVerticesByDataSet(String dataSet) {
         return dataSetToVertices.get(dataSet);
     }
 
-    public List<Edge> getEdgesByDataSet(String dataSet) {
+    public List<EdgeWrapper> getEdgesByDataSet(String dataSet) {
         return dataSetToEdges.get(dataSet);
     }
 }

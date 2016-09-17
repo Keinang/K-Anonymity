@@ -1,7 +1,7 @@
-package App.Controller;
+package App.UITasks;
 
+import App.Controller.DataSetController;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.swing.*;
 
@@ -23,7 +23,6 @@ public class DataSetLoaderTask extends SwingWorker<Void, Integer> {
     protected Void doInBackground() throws Exception {
         try {
             final String dataSet = this.dataSet;
-            logger.info("Starting to load dataset:" + this.dataSet);
             setProgress(0);
 
             Thread thread = new Thread(new Runnable() {
@@ -47,6 +46,8 @@ public class DataSetLoaderTask extends SwingWorker<Void, Integer> {
                 progress = dataSetController.getProgress(dataSet);
                 setProgress(progress);
             }
+
+            firePropertyChange("done", false, true);
 
         } catch (Exception e) {
             logger.error(e);
