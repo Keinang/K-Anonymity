@@ -10,7 +10,9 @@ import App.Model.Vertice;
 import App.Utils.DemoDataCreator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -18,7 +20,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by Keinan.Gilad on 9/10/2016.
@@ -64,6 +65,8 @@ public class AppFrame extends JFrame {
         setTitle(FRAME_TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //setUndecorated(true);
 
         // init controls:
         JLabel algorithmsLabel = new JLabel(ALGORITHMS);
@@ -100,10 +103,11 @@ public class AppFrame extends JFrame {
         initDataSetControls();
 
         // progress bar for loading the algorithm
-        JProgressBar progressBar = new JProgressBar(0, 100);
-        progressBar.setBounds(0, 0, 100, 100);
-        progressBar.setValue(0);
-        progressBar.setStringPainted(true);
+        JProgressBar executeProgressBar = new JProgressBar(0, 100);
+        executeProgressBar.setBounds(0, 0, 100, 100);
+        executeProgressBar.setValue(0);
+        executeProgressBar.setStringPainted(true);
+        executeProgressBar.setMaximumSize(new Dimension(130,140));
 
         // values for after running the algorithm
         JLabel durationLabel = new JLabel("Duration");
@@ -175,6 +179,7 @@ public class AppFrame extends JFrame {
                                 .addComponent(durationLabel)
                                 .addComponent(beforeVerticesLabel)
                                 .addComponent(beforeEdgesLabel)
+                                .addComponent(executeButton)
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(chooseKLabel)
@@ -200,6 +205,7 @@ public class AppFrame extends JFrame {
                                 .addComponent(afterEdgesAddedLabel)
                                 .addComponent(afterEdgesRemovedLabel)
                                 .addComponent(afterObfuscationLeveldLabel)
+                                .addComponent(executeProgressBar)
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(afterVerticesLabelValue)
@@ -213,11 +219,6 @@ public class AppFrame extends JFrame {
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                         )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(executeButton)
-                                .addComponent(progressBar)
-                        )
-
                 )
                 .addComponent(tabbedPane)
                 .addComponent(sp1)
@@ -229,7 +230,6 @@ public class AppFrame extends JFrame {
                         .addComponent(algorithmsLabel)
                         .addComponent(chooseKLabel)
                         .addComponent(chooseDataSetLabel)
-                        .addComponent(executeButton)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(radioButtonAlgorithms1)
@@ -254,7 +254,10 @@ public class AppFrame extends JFrame {
                 .addComponent(sp1)
                 // Panel 2:
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(progressBar)
+                        .addComponent(executeButton)
+                        .addComponent(executeProgressBar)
+                )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(durationLabel)
                         .addComponent(durationLabelValue)
 
@@ -303,7 +306,6 @@ public class AppFrame extends JFrame {
         );
 
         pack();
-        //setSize(800, 800);
     }
 
     private List<JRadioButton> initDataSetControls() {
@@ -335,6 +337,7 @@ public class AppFrame extends JFrame {
             progressBar.setBounds(0, 0, 100, 100);
             progressBar.setValue(0);
             progressBar.setStringPainted(true);
+            progressBar.setMaximumSize(new Dimension(130,140));
             dataSetToProgressBar.put(dataSet, progressBar);
 
             // load the data set into persistence
@@ -351,7 +354,7 @@ public class AppFrame extends JFrame {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("progress".equals(evt.getPropertyName())) {
-                    String dataSet = ((DataSetLoaderTask)evt.getSource()).getDataSetName();
+                    String dataSet = ((DataSetLoaderTask) evt.getSource()).getDataSetName();
                     int progress = (Integer) evt.getNewValue();
                     JProgressBar progressBar = dataSetToProgressBar.get(dataSet);
                     progressBar.setValue(progress);
