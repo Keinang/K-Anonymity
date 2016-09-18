@@ -3,9 +3,12 @@ package App.View;
 import App.Controller.DataSetController;
 import App.Controller.ExecuteController;
 import App.Model.AlgoType;
+import App.Model.DataSetModel;
 import App.Model.InputContext;
 import App.UITasks.DataSetLoaderTask;
-import App.UITasks.GraphPanelLoaderTask;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -203,10 +206,12 @@ public class AppFrame extends JFrame {
                                 .addComponent(chooseDataSetLabel)
                                 .addComponent(dataSetsRadioButtons.get(0))
                                 .addComponent(dataSetsRadioButtons.get(1))
+                                .addComponent(dataSetsRadioButtons.get(2))
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
+                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                         )
                         .addComponent(tabbedPane)
                 )
@@ -240,6 +245,11 @@ public class AppFrame extends JFrame {
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                 .addComponent(dataSetsRadioButtons.get(1))
                                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
+                                        )
+
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(dataSetsRadioButtons.get(2))
+                                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                                         )
                                 )
                         )
@@ -348,7 +358,7 @@ public class AppFrame extends JFrame {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
-                String dataSet = ((DataSetLoaderTask) evt.getSource()).getDataSetName();
+                final String dataSet = ((DataSetLoaderTask) evt.getSource()).getDataSetName();
                 if ("progress".equals(propertyName)) {
                     // update the progress bar with recent value
                     int progress = (Integer) evt.getNewValue();
@@ -356,19 +366,17 @@ public class AppFrame extends JFrame {
                     progressBar.setValue(progress);
                     //logger.debug("Progress DataSet Event: " + dataSet + " Progress:" + progress);
                 } else if ("done".equals(propertyName)) {
-                    GraphPanelLoaderTask task = new GraphPanelLoaderTask(dataSet, dataSetController);
-                    task.addPropertyChangeListener(new PropertyChangeListener() {
-
+                    logger.debug("Start Graph Event: " + dataSet);
+                    final JFXPanel jfxPanel = new JFXPanel();// initializes JavaFX environment
+                    Platform.runLater(new Runnable() {
                         @Override
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            String dataSet = ((GraphPanelLoaderTask) evt.getSource()).getDataSetName();
-                            if ("done".equals(evt.getPropertyName())) {
-                                logger.debug("Done build graph: " + dataSet);
-                                tabbedPane.add(ORIGINAL_GRAPH + " for " + dataSet, (Component) evt.getNewValue());
-                            }
+                        public void run() {
+                            DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
+                            BarChartView chart = new BarChartView(dataSetToModel);
+                            jfxPanel.setScene(new Scene(chart.getChart(), 1000, 1000));
+                            tabbedPane.add(jfxPanel);
                         }
                     });
-                    task.execute();
                 }
             }
         });

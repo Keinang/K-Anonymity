@@ -1,8 +1,5 @@
 package App.Model;
 
-import edu.uci.ics.jung.graph.Edge;
-import edu.uci.ics.jung.graph.Vertex;
-
 import java.util.List;
 
 /**

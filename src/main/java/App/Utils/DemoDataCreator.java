@@ -1,12 +1,13 @@
 package App.Utils;
 
-import edu.uci.ics.jung.algorithms.blockmodel.GraphCollapser;
-import edu.uci.ics.jung.graph.Edge;
-import edu.uci.ics.jung.graph.Vertex;
-import edu.uci.ics.jung.graph.impl.SparseVertex;
+import App.Model.DataSetModel;
+import App.Model.Edge;
+import App.Model.Vertex;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by Keinan.Gilad on 9/10/2016.
@@ -19,27 +20,34 @@ public class DemoDataCreator {
 
     private static final Random position = new Random();
 
-    public List<Edge> createDemoEdges(Map<String, Vertex> verticesMap) {
-        List<Edge> edges = new ArrayList<>();
-        Collection<Vertex> verticesValues = verticesMap.values();
-        Vertex[] vertices = verticesValues.toArray(new Vertex[verticesValues.size()]);
-        int randomSize = verticesValues.size();
+    public Set<Edge> createDemoEdges(Set<Vertex> verticesSet) {
+        Set<Edge> edges = new HashSet<>();
+        Vertex[] vertices = verticesSet.toArray(new Vertex[verticesSet.size()]);
+        int randomSize = verticesSet.size();
         for (int i = 0; i < EDGES_SIZE; i++) {
             int xIdx = position.nextInt(randomSize);
             int yIdx = position.nextInt(randomSize);
 
-            edges.add(new GraphCollapser.UndirectedCollapsedEdge(vertices[xIdx], vertices[yIdx], null));
+            edges.add(new Edge(vertices[xIdx], vertices[yIdx]));
         }
 
         return edges;
     }
 
-    public Map<String, Vertex> createDemoVertices() {
-        Map<String, Vertex> result = new HashMap<String, Vertex>();
+    public Set<Vertex> createDemoVertices() {
+        Set<Vertex> result = new HashSet<>();
 
         for (int i = 0; i < VERTICES_SIZE; i++) {
-            result.put(String.valueOf(i), new SparseVertex());
+            result.add(new Vertex(String.valueOf(i)));
         }
         return result;
+    }
+
+    public DataSetModel getDataSetToModel() {
+        DataSetModel model = new DataSetModel();
+        model.setVertices(createDemoVertices());
+        model.setEdges(createDemoEdges(model.getVertices()));
+        model.setTitle("Demo chart");
+        return model;
     }
 }

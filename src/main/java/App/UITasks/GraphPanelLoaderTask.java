@@ -1,17 +1,15 @@
 package App.UITasks;
 
 import App.Controller.DataSetController;
-import App.Model.EdgeWrapper;
-import App.View.jungGraphPanel;
-import edu.uci.ics.jung.algorithms.blockmodel.GraphCollapser;
-import edu.uci.ics.jung.graph.Edge;
-import edu.uci.ics.jung.graph.Vertex;
+import App.Model.DataSetModel;
+import App.View.BarChartView;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by Keinan.Gilad on 9/16/2016.
@@ -34,20 +32,21 @@ public class GraphPanelLoaderTask extends SwingWorker<Void, Void> {
 
             Thread thread = new Thread(new Runnable() {
                 public void run() {
-                    jungGraphPanel originalGraph = new jungGraphPanel();
-                    HashMap<String, Vertex> vertices = dataSetController.getVerticesByDataSet(dataSet);
-                    originalGraph.addVertexes(vertices);
+                    final JFXPanel[] jfxPanel = {null};
 
-                    List<EdgeWrapper> edges = dataSetController.getEdgesByDataSet(dataSet);
-                    List<Edge> graphEdges = new ArrayList<>();
-                    for (EdgeWrapper edge : edges) {
-                        graphEdges.add(new GraphCollapser.UndirectedCollapsedEdge(edge.getV0(), edge.getV1(), null));
-                    }
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            jfxPanel[0] = new JFXPanel();// initializes JavaFX environment
 
-                    originalGraph.addEdges(graphEdges);
-                    originalGraph.addTable();
-
-                    firePropertyChange("done", null, originalGraph);
+                            DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
+                            BarChartView chart = new BarChartView(dataSetToModel);
+                            jfxPanel[0].setScene(new Scene(chart.getChart()));
+                            firePropertyChange("done", null, jfxPanel[0]);
+                            latch.countDown();
+                        }
+                    });
                 }
             });
 
