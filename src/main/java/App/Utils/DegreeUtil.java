@@ -22,7 +22,7 @@ public class DegreeUtil {
                 degreeToCounter.put(degree, lastCount + 1);
             } else {
                 // first time to enter
-                degreeToCounter.put(degree, 0);
+                degreeToCounter.put(degree, 1);
             }
         }
         return degreeToCounter;

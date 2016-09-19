@@ -20,8 +20,8 @@ import java.util.*;
  * Created by Keinan.Gilad on 9/18/2016.
  */
 public class BarChartView {
-    public static final String ORIGINAL_CHART = "Original Chart";
     private static Logger logger = Logger.getLogger(BarChartView.class);
+    public static final String ORIGINAL_CHART = "Original Chart";
     public static final String VERTICES = "Vertices";
     public static final String DEGREE = "Degree";
     private BarChart<Number, Number> chart;

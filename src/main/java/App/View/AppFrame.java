@@ -6,9 +6,6 @@ import App.Model.AlgoType;
 import App.Model.DataSetModel;
 import App.Model.InputContext;
 import App.UITasks.DataSetLoaderTask;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,8 +25,6 @@ import java.util.List;
 public class AppFrame extends JFrame {
     private static Logger logger = Logger.getLogger(AppFrame.class);
 
-    public static final String ORIGINAL_GRAPH = "Original Graph";
-    public static final String ANONYMIZED_GRAPH = "Anonymized Graph";
     public static final String ALGORITHMS = "Algorithms";
     public static final String CHOOSE_K = "Choose K";
     public static final String DATA_SETS = "Data Sets";
@@ -48,9 +43,7 @@ public class AppFrame extends JFrame {
     private List<JRadioButton> dataSetsRadioButtons;
     private HashMap<String, JProgressBar> dataSetToProgressBar;
     private JTabbedPane tabbedPane;
-
-    public AppFrame() {
-    }
+    private JPanel chartsPanel;
 
     @SuppressWarnings("ALL")
     public void initUIComponents() {
@@ -142,6 +135,9 @@ public class AppFrame extends JFrame {
 
         // graphs
         tabbedPane = new JTabbedPane();
+        chartsPanel = new JPanel();
+        chartsPanel.setLayout(new BoxLayout(chartsPanel, BoxLayout.X_AXIS));
+        tabbedPane.add(chartsPanel, "Charts");
 
         // execute button
         JButton executeButton = new JButton("Execute");
@@ -367,16 +363,17 @@ public class AppFrame extends JFrame {
                     //logger.debug("Progress DataSet Event: " + dataSet + " Progress:" + progress);
                 } else if ("done".equals(propertyName)) {
                     logger.debug("Start Graph Event: " + dataSet);
-                    final JFXPanel jfxPanel = new JFXPanel();// initializes JavaFX environment
-                    Platform.runLater(new Runnable() {
-                        @Override
+                    Thread thread = new Thread(new Runnable() {
                         public void run() {
                             DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
-                            BarChartView chart = new BarChartView(dataSetToModel);
-                            jfxPanel.setScene(new Scene(chart.getChart(), 1000, 1000));
-                            tabbedPane.add(jfxPanel);
+                            TableView table = new TableView(dataSetToModel);
+                            chartsPanel.add(table);
+                            chartsPanel.revalidate();
+                            chartsPanel.repaint();
+                            logger.debug("Done Graph Event: " + dataSet);
                         }
                     });
+                    thread.start();
                 }
             }
         });
