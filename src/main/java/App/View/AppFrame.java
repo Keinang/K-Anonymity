@@ -23,6 +23,8 @@ import java.util.List;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class AppFrame extends JFrame {
+    public static final String ORIGINAL_CHARTS = "Original Charts";
+    public static final String EXECUTE = "Execute";
     private static Logger logger = Logger.getLogger(AppFrame.class);
 
     public static final String ALGORITHMS = "Algorithms";
@@ -104,12 +106,6 @@ public class AppFrame extends JFrame {
         JLabel durationLabel = new JLabel("Duration");
         JLabel durationLabelValue = new JLabel(DEFAULT_VALUE);
 
-        JLabel beforeVerticesLabel = new JLabel("Vertices total");
-        JLabel beforeVerticesLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel beforeEdgesLabel = new JLabel("Edges total");
-        JLabel beforeEdgesLabelValue = new JLabel(DEFAULT_VALUE);
-
         JLabel afterVerticesLabel = new JLabel("Vertices total");
         JLabel afterVerticesLabelValue = new JLabel(DEFAULT_VALUE);
 
@@ -137,16 +133,16 @@ public class AppFrame extends JFrame {
         tabbedPane = new JTabbedPane();
         chartsPanel = new JPanel();
         chartsPanel.setLayout(new BoxLayout(chartsPanel, BoxLayout.X_AXIS));
-        tabbedPane.add(chartsPanel, "Charts");
+        tabbedPane.add(chartsPanel, ORIGINAL_CHARTS);
 
         // execute button
-        JButton executeButton = new JButton("Execute");
+        JButton executeButton = new JButton(EXECUTE);
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String algoTypeCommand = buttonGroupAlgorithms.getSelection().getActionCommand();
                 String kTypeCommand = buttonGroupForK.getSelection().getActionCommand();
                 String dataSetCommand = buttonGroupForDataSets.getSelection().getActionCommand();
-                logger.info(String.format("executeButton called for {Algorithm=%s, K=%s, DataSet=%s}", algoTypeCommand, kTypeCommand, dataSetCommand));
+                logger.info(String.format("Execute Button called for {Algorithm=%s, K=%s, DataSet=%s}", algoTypeCommand, kTypeCommand, dataSetCommand));
 
                 // create the input context with all the needed information for execute
                 InputContext inputContext = new InputContext();
@@ -168,8 +164,6 @@ public class AppFrame extends JFrame {
                                 // level 2
                                 .addComponent(executeButton)
                                 .addComponent(durationLabel)
-                                .addComponent(beforeVerticesLabel)
-                                .addComponent(beforeEdgesLabel)
                                 .addComponent(afterVerticesLabel)
                                 .addComponent(afterVerticesAddedLabel)
                                 .addComponent(afterVerticesRemovedLabel)
@@ -188,8 +182,6 @@ public class AppFrame extends JFrame {
                                 // level 2
                                 .addComponent(executeProgressBar)
                                 .addComponent(durationLabelValue)
-                                .addComponent(beforeVerticesLabelValue)
-                                .addComponent(beforeEdgesLabelValue)
                                 .addComponent(afterVerticesLabelValue)
                                 .addComponent(afterVerticesAddedLabelValue)
                                 .addComponent(afterVerticesRemovedLabelValue)
@@ -261,16 +253,6 @@ public class AppFrame extends JFrame {
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                 .addComponent(durationLabel)
                                                 .addComponent(durationLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(beforeVerticesLabel)
-                                                .addComponent(beforeVerticesLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(beforeEdgesLabel)
-                                                .addComponent(beforeEdgesLabelValue)
                                         )
 
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
