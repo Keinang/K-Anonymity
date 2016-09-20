@@ -134,3 +134,25 @@ public class TableView extends JPanel {
         jf.setVisible(true);
     }
 }
+
+
+/*
+Labels for tableView after executing the algorithm
+.addComponent(durationLabelValue)
+.addComponent(afterVerticesLabelValue)
+.addComponent(afterVerticesAddedLabelValue)
+.addComponent(afterVerticesRemovedLabelValue)
+.addComponent(afterEdgesLabelValue)
+.addComponent(afterEdgesAddedLabelValue)
+.addComponent(afterEdgesRemovedLabelValue)
+.addComponent(afterObfuscationLeveldLabelValue)
+
+
+.addComponent(durationLabel)
+.addComponent(afterVerticesLabel)
+.addComponent(afterVerticesAddedLabel)
+.addComponent(afterVerticesRemovedLabel)
+.addComponent(afterEdgesLabel)
+.addComponent(afterEdgesAddedLabel)
+.addComponent(afterEdgesRemovedLabel)
+.addComponent(afterObfuscationLeveldLabel)*/

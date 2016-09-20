@@ -50,8 +50,9 @@ public class AppFrame extends JFrame {
     @SuppressWarnings("ALL")
     public void initUIComponents() {
         // set layout properties
-        GroupLayout layout = new GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
+        final Container contentPane = getContentPane();
+        GroupLayout layout = new GroupLayout(contentPane);
+        contentPane.setLayout(layout);
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
         setTitle(FRAME_TITLE);
@@ -156,6 +157,7 @@ public class AppFrame extends JFrame {
         // setting the Layout
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
+                        // column 0
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(algorithmsLabel)
                                 .addComponent(radioButtonAlgorithms1)
@@ -163,15 +165,8 @@ public class AppFrame extends JFrame {
 
                                 // level 2
                                 .addComponent(executeButton)
-                                .addComponent(durationLabel)
-                                .addComponent(afterVerticesLabel)
-                                .addComponent(afterVerticesAddedLabel)
-                                .addComponent(afterVerticesRemovedLabel)
-                                .addComponent(afterEdgesLabel)
-                                .addComponent(afterEdgesAddedLabel)
-                                .addComponent(afterEdgesRemovedLabel)
-                                .addComponent(afterObfuscationLeveldLabel)
                         )
+                        // column 1
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(chooseKLabel)
                                 .addComponent(radioButtonForK1)
@@ -181,33 +176,28 @@ public class AppFrame extends JFrame {
 
                                 // level 2
                                 .addComponent(executeProgressBar)
-                                .addComponent(durationLabelValue)
-                                .addComponent(afterVerticesLabelValue)
-                                .addComponent(afterVerticesAddedLabelValue)
-                                .addComponent(afterVerticesRemovedLabelValue)
-                                .addComponent(afterEdgesLabelValue)
-                                .addComponent(afterEdgesAddedLabelValue)
-                                .addComponent(afterEdgesRemovedLabelValue)
-                                .addComponent(afterObfuscationLeveldLabelValue)
                         )
+                        // column 2
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(chooseDataSetLabel)
                                 .addComponent(dataSetsRadioButtons.get(0))
                                 .addComponent(dataSetsRadioButtons.get(1))
                                 .addComponent(dataSetsRadioButtons.get(2))
                         )
+                        // column 3
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
                                 .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
                         )
-                        .addComponent(tabbedPane)
                 )
+                .addComponent(tabbedPane)
                 .addComponent(sp1)
         );
 
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
+                        // row 0
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addComponent(algorithmsLabel)
@@ -241,59 +231,38 @@ public class AppFrame extends JFrame {
                                         )
                                 )
                         )
-                        .addComponent(sp1)
-                        // Panel 2:
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(executeButton)
-                                                .addComponent(executeProgressBar)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(durationLabel)
-                                                .addComponent(durationLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(afterVerticesLabel)
-                                                .addComponent(afterVerticesLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(afterVerticesAddedLabel)
-                                                .addComponent(afterVerticesAddedLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(afterVerticesRemovedLabel)
-                                                .addComponent(afterVerticesRemovedLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(afterEdgesLabel)
-                                                .addComponent(afterEdgesLabelValue)
-                                        )
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(afterEdgesAddedLabel)
-                                                .addComponent(afterEdgesAddedLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(afterEdgesRemovedLabel)
-                                                .addComponent(afterEdgesRemovedLabelValue)
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(afterObfuscationLeveldLabel)
-                                                .addComponent(afterObfuscationLeveldLabelValue)
-                                        )
-                                )
+                                .addComponent(executeButton)
+                                .addComponent(executeProgressBar)
+                        )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(sp1)
+                                .addComponent(tabbedPane)
                         )
                 )
-                .addComponent(tabbedPane)
         );
 
+        MenuBar menubar = new MenuBar();
+        final Menu fileMenu = new Menu("File");
+        final MenuItem aboutItem = new MenuItem("About");
+        aboutItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(contentPane, "Written by Keinan Gilad (keinan.gilad@gmail.com) for MSc in open university.");
+            }
+        });
+        fileMenu.add(aboutItem);
+        menubar.add(fileMenu);
+        this.setMenuBar(menubar);
+
+        // adding 3 table view to keep the space
+        /*List<String> dataSetsNames = dataSetController.getDataSetsNames();
+        for (String dataSet :dataSetsNames) {
+            DataSetModel dataSetToModel = new DataSetModel();
+            dataSetToModel.setTitle(dataSet);
+            TableView table = new TableView(dataSetToModel);
+            chartsPanel.add(table);
+        }*/
         pack();
     }
 
