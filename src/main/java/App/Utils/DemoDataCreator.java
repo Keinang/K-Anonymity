@@ -8,7 +8,7 @@ import java.util.Random;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class DemoDataCreator {
-    public static final int VERTICES_SIZE = 5000;
+    public static final int VERTICES_SIZE = 5000; // approx.
     public static final double EDGES_SIZE = VERTICES_SIZE * 1.3;
 
     private static final Random position = new Random();

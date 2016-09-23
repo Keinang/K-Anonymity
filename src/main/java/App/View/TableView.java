@@ -10,6 +10,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.*;
 
+import static App.Controller.DataSetController.getDegreeFreq;
+
 /**
  * Created by Keinan.Gilad on 9/19/2016.
  */
@@ -25,25 +27,21 @@ public class TableView extends JPanel {
 
     private Object[][] prepareModel(DataSetModel dataSetToModel) {
         // get dataset model:
-        Map<Vertex, Integer> vertexToDegree = dataSetToModel.getVertexToDegree();
-        Collection<Integer> allDegreesWithDuplicates = vertexToDegree.values();
-
-        // iterating to count frequency of each degree
-        Iterator<Integer> allDegreesWithDuplicatesIterator = allDegreesWithDuplicates.iterator();
-        Set<Integer> degreesSet = new HashSet<>();
-        Map<Integer, Integer> degreeToCount = new HashMap<>();
-        while (allDegreesWithDuplicatesIterator.hasNext()) {
-            Integer degree = allDegreesWithDuplicatesIterator.next();
-            if (!degreesSet.contains(degree)) {
-                degreesSet.add(degree);
-                int frequency = Collections.frequency(allDegreesWithDuplicates, degree);
-                degreeToCount.put(degree, frequency);
-            }
+        Map<Vertex, Set<Vertex>> vertexToNeighbors = dataSetToModel.getVertexToNeighbors();
+        Collection<Set<Vertex>> vertexDegreesValues = vertexToNeighbors.values();
+        ArrayList<Integer> allDegreesWithDuplicates = new ArrayList<>();
+        Iterator<Set<Vertex>> vertexDegreesValuesIter = vertexDegreesValues.iterator();
+        while (vertexDegreesValuesIter.hasNext()){
+            allDegreesWithDuplicates.add(vertexDegreesValuesIter.next().size());
         }
 
+        // Count frequency of each degree
+        Map<Integer, Integer> degreeToCount = getDegreeFreq(allDegreesWithDuplicates);
+
         // prepare the table model
-        Iterator<Integer> degreeIterator = degreesSet.iterator();
-        Object rowData[][] = new Object[degreesSet.size()][2];
+        Set<Integer> degrees = degreeToCount.keySet();
+        Iterator<Integer> degreeIterator = degrees.iterator();
+        Object rowData[][] = new Object[degrees.size()][2];
 
         int i = 0;
         while (degreeIterator.hasNext()) {

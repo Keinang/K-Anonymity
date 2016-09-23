@@ -5,9 +5,7 @@ import App.Utils.FileUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Keinan.Gilad on 9/16/2016.
@@ -82,5 +80,20 @@ public class DataSetController {
 
     public DataSetModel getDataSetToModel(String dataSet) {
         return dataSetToModel.get(dataSet);
+    }
+
+    public static Map<Integer, Integer> getDegreeFreq(Collection<Integer> allDegreesWithDuplicates) {
+        Iterator<Integer> allDegreesWithDuplicatesIterator = allDegreesWithDuplicates.iterator();
+        Set<Integer> degreesSet = new HashSet<>();
+        Map<Integer, Integer> degreeToCount = new HashMap<>();
+        while (allDegreesWithDuplicatesIterator.hasNext()) {
+            Integer degree = allDegreesWithDuplicatesIterator.next();
+            if (!degreesSet.contains(degree)) {
+                degreesSet.add(degree);
+                int frequency = Collections.frequency(allDegreesWithDuplicates, degree);
+                degreeToCount.put(degree, frequency);
+            }
+        }
+        return degreeToCount;
     }
 }
