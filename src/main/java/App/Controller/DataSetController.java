@@ -23,21 +23,23 @@ public class DataSetController {
     @Autowired
     private FileUtil fileUtils;
     private List<String> dataSetsNames = new ArrayList<>();
-    private HashMap<String, String> dataSetNameToFileName;
-    private HashMap<String, DataSetModel> dataSetToModel;
-    private HashMap<String, Integer> dataSetToProgress;
+    private HashMap<String, String> dataSetNameToFileName = new HashMap<>();
+    private HashMap<String, DataSetModel> dataSetToModel = new HashMap<>();
+    private HashMap<String, Integer> dataSetToProgress = new HashMap<>();
 
     public DataSetController() {
-        dataSetsNames.add(FACEBOOK_CIRCLES);
-        dataSetsNames.add(WIKIPEDIA_VOTING);
-        dataSetsNames.add(TWITTER_CIRCLES);
+        addDataSets();
+    }
 
-        dataSetNameToFileName = new HashMap<>();
+    private void addDataSets() {
+        dataSetsNames.add(FACEBOOK_CIRCLES);
         dataSetNameToFileName.put(FACEBOOK_CIRCLES, FACEBOOK_CIRCLES_FILE);
+
+        dataSetsNames.add(WIKIPEDIA_VOTING);
         dataSetNameToFileName.put(WIKIPEDIA_VOTING, WIKI_VOTE_FILE);
-        dataSetNameToFileName.put(TWITTER_CIRCLES, TWITTER_COMBINED_FILE);
-        dataSetToModel = new HashMap<>();
-        dataSetToProgress = new HashMap<>();
+
+        //dataSetsNames.add(TWITTER_CIRCLES);
+        //dataSetNameToFileName.put(TWITTER_CIRCLES, TWITTER_COMBINED_FILE);
     }
 
     public List<String> getDataSetsNames() {
@@ -52,7 +54,8 @@ public class DataSetController {
         List<String> values = fileUtils.loadDataSet(fileName);
         int size = values.size();
         DataSetModel model = new DataSetModel();
-        model.setTitle(dataSet);
+        model.setDataSet(dataSet);
+        model.setTitle("Original " + dataSet);
         for (int i = 0; i < size; i++) {
             String valueRow = values.get(i);
             // split by spaces

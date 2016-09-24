@@ -1,21 +1,20 @@
 package App.View;
 
 import App.Controller.DataSetController;
-import App.Controller.ExecuteController;
+import App.Controller.KDegreeAlgorithm;
 import App.Model.AlgoType;
 import App.Model.DataSetModel;
-import App.Model.InputContext;
 import App.UITasks.DataSetLoaderTask;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,29 +22,32 @@ import java.util.List;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class AppFrame extends JFrame {
+    private static Logger logger = Logger.getLogger(AppFrame.class);
     public static final String ORIGINAL_CHARTS = "Original Charts";
     public static final String EXECUTE = "Execute";
-    private static Logger logger = Logger.getLogger(AppFrame.class);
-
+    public static final String ABOUT_TEXT = "Written by Keinan Gilad (keinan.gilad@gmail.com) for MSc in open university.";
     public static final String ALGORITHMS = "Algorithms";
-    public static final String CHOOSE_K = "Choose K";
+    public static final String CHOOSE_K = "K";
     public static final String DATA_SETS = "Data Sets";
     private static final String FRAME_TITLE = "K-Anonymity Algorithm Simulator";
-    private static final String DEFAULT_VALUE = "N/A";
-    @Autowired
-    private ExecuteController executeController;
+    private static final Boolean initDataSets = true;
 
     @Autowired
     private DataSetController dataSetController;
+
+    @Autowired
+    private KDegreeAlgorithm kDegreeAlgorithm;
 
     private List<String> dataSetsNames;
     private ButtonGroup buttonGroupAlgorithms;
     private ButtonGroup buttonGroupForK;
     private ButtonGroup buttonGroupForDataSets;
-    private List<JRadioButton> dataSetsRadioButtons;
     private HashMap<String, JProgressBar> dataSetToProgressBar;
+    private HashMap<String, JPanel> dataSetToChartPanel;
     private JTabbedPane tabbedPane;
-    private JPanel chartsPanel;
+    private JPanel dataSetPickerPanel;
+    private JPanel kPanel;
+    private JPanel algorithmPanel;
 
     @SuppressWarnings("ALL")
     public void initUIComponents() {
@@ -60,97 +62,22 @@ public class AppFrame extends JFrame {
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // init controls:
-        JLabel algorithmsLabel = new JLabel(ALGORITHMS);
-        JLabel chooseKLabel = new JLabel(CHOOSE_K);
-        JLabel chooseDataSetLabel = new JLabel(DATA_SETS);
-
         // radio buttons for algorithms
-        buttonGroupAlgorithms = new ButtonGroup();
-        JRadioButton radioButtonAlgorithms1 = new JRadioButton("K-Degree");
-        radioButtonAlgorithms1.setActionCommand(AlgoType.KDegree.toString());
-        radioButtonAlgorithms1.setSelected(true);
-        JRadioButton radioButtonAlgorithms2 = new JRadioButton("K-Neighborhood");
-        radioButtonAlgorithms2.setActionCommand(AlgoType.KNeighborhood.toString());
-        buttonGroupAlgorithms.add(radioButtonAlgorithms1);
-        buttonGroupAlgorithms.add(radioButtonAlgorithms2);
+        initAlgorithms();
 
         // radio buttons for choosing K
-        buttonGroupForK = new ButtonGroup();
-        JRadioButton radioButtonForK1 = new JRadioButton("5");
-        radioButtonForK1.setActionCommand("5");
-        radioButtonForK1.setSelected(true);
-        JRadioButton radioButtonForK2 = new JRadioButton("10");
-        radioButtonForK2.setActionCommand("10");
-        JRadioButton radioButtonForK3 = new JRadioButton("15");
-        radioButtonForK3.setActionCommand("15");
-        JRadioButton radioButtonForK4 = new JRadioButton("20");
-        radioButtonForK4.setActionCommand("20");
-        buttonGroupForK.add(radioButtonForK1);
-        buttonGroupForK.add(radioButtonForK2);
-        buttonGroupForK.add(radioButtonForK3);
-        buttonGroupForK.add(radioButtonForK4);
+        initK();
 
         // radio buttons for choosing Data Sets
         initDataSetControls();
 
-        // progress bar for loading the algorithm
-        JProgressBar executeProgressBar = new JProgressBar(0, 100);
-        executeProgressBar.setBounds(0, 0, 100, 100);
-        executeProgressBar.setValue(0);
-        executeProgressBar.setStringPainted(true);
-        executeProgressBar.setMaximumSize(new Dimension(130, 25));
-        executeProgressBar.setPreferredSize(new Dimension(130, 25));
-        executeProgressBar.setSize(new Dimension(130, 25));
-
-        // values for after running the algorithm
-        JLabel durationLabel = new JLabel("Duration");
-        JLabel durationLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel afterVerticesLabel = new JLabel("Vertices total");
-        JLabel afterVerticesLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel afterVerticesAddedLabel = new JLabel("Vertices added");
-        JLabel afterVerticesAddedLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel afterVerticesRemovedLabel = new JLabel("Vertices removed");
-        JLabel afterVerticesRemovedLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel afterEdgesLabel = new JLabel("Edges total");
-        JLabel afterEdgesLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel afterEdgesAddedLabel = new JLabel("Edges added");
-        JLabel afterEdgesAddedLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel afterEdgesRemovedLabel = new JLabel("Edges removed");
-        JLabel afterEdgesRemovedLabelValue = new JLabel(DEFAULT_VALUE);
-
-        JLabel afterObfuscationLeveldLabel = new JLabel("Obfuscation Level");
-        JLabel afterObfuscationLeveldLabelValue = new JLabel(DEFAULT_VALUE);
-
         JSeparator sp1 = new JSeparator();
 
-        // graphs
-        tabbedPane = new JTabbedPane();
-        chartsPanel = new JPanel();
-        chartsPanel.setLayout(new BoxLayout(chartsPanel, BoxLayout.X_AXIS));
-        tabbedPane.add(chartsPanel, ORIGINAL_CHARTS);
-
         // execute button
-        JButton executeButton = new JButton(EXECUTE);
+        final JButton executeButton = new JButton(EXECUTE);
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String algoTypeCommand = buttonGroupAlgorithms.getSelection().getActionCommand();
-                String kTypeCommand = buttonGroupForK.getSelection().getActionCommand();
-                String dataSetCommand = buttonGroupForDataSets.getSelection().getActionCommand();
-                logger.info(String.format("Execute Button called for {Algorithm=%s, K=%s, DataSet=%s}", algoTypeCommand, kTypeCommand, dataSetCommand));
-
-                // create the input context with all the needed information for execute
-                InputContext inputContext = new InputContext();
-                inputContext.setAlgoTypeCommand(algoTypeCommand);
-                inputContext.setKTypeCommand(kTypeCommand);
-                inputContext.setDataSetCommand(dataSetCommand);
-                executeController.execute(inputContext);
+                runAlgorithm();
             }
         });
 
@@ -159,36 +86,18 @@ public class AppFrame extends JFrame {
                 .addGroup(layout.createSequentialGroup()
                         // column 0
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(algorithmsLabel)
-                                .addComponent(radioButtonAlgorithms1)
-                                .addComponent(radioButtonAlgorithms2)
+                                .addComponent(algorithmPanel)
 
                                 // level 2
                                 .addComponent(executeButton)
                         )
                         // column 1
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(chooseKLabel)
-                                .addComponent(radioButtonForK1)
-                                .addComponent(radioButtonForK2)
-                                .addComponent(radioButtonForK3)
-                                .addComponent(radioButtonForK4)
-
-                                // level 2
-                                .addComponent(executeProgressBar)
+                                .addComponent(kPanel)
                         )
                         // column 2
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(chooseDataSetLabel)
-                                .addComponent(dataSetsRadioButtons.get(0))
-                                .addComponent(dataSetsRadioButtons.get(1))
-                                .addComponent(dataSetsRadioButtons.get(2))
-                        )
-                        // column 3
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
-                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
-                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
+                                .addComponent(dataSetPickerPanel)
                         )
                 )
                 .addComponent(tabbedPane)
@@ -200,40 +109,18 @@ public class AppFrame extends JFrame {
                         // row 0
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
-                                        .addComponent(algorithmsLabel)
-                                        .addComponent(radioButtonAlgorithms1)
-                                        .addComponent(radioButtonAlgorithms2)
+                                        .addComponent(algorithmPanel)
                                 )
                                 .addGroup(layout.createSequentialGroup()
-                                        .addComponent(chooseKLabel)
-                                        .addComponent(radioButtonForK1)
-                                        .addComponent(radioButtonForK2)
-                                        .addComponent(radioButtonForK3)
-                                        .addComponent(radioButtonForK4)
+                                        .addComponent(kPanel)
                                 )
 
                                 .addGroup(layout.createSequentialGroup()
-                                        .addComponent(chooseDataSetLabel)
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(dataSetsRadioButtons.get(0))
-                                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(0)))
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(dataSetsRadioButtons.get(1))
-                                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(1)))
-                                        )
-
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(dataSetsRadioButtons.get(2))
-                                                .addComponent(dataSetToProgressBar.get(dataSetsNames.get(2)))
-                                        )
+                                        .addComponent(dataSetPickerPanel)
                                 )
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(executeButton)
-                                .addComponent(executeProgressBar)
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(sp1)
@@ -248,55 +135,157 @@ public class AppFrame extends JFrame {
         aboutItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(contentPane, "Written by Keinan Gilad (keinan.gilad@gmail.com) for MSc in open university.");
+                JOptionPane.showMessageDialog(contentPane, ABOUT_TEXT);
             }
         });
         fileMenu.add(aboutItem);
         menubar.add(fileMenu);
         this.setMenuBar(menubar);
-
-        // adding 3 table view to keep the space
-        /*List<String> dataSetsNames = dataSetController.getDataSetsNames();
-        for (String dataSet :dataSetsNames) {
-            DataSetModel dataSetToModel = new DataSetModel();
-            dataSetToModel.setTitle(dataSet);
-            TableView table = new TableView(dataSetToModel);
-            chartsPanel.add(table);
-        }*/
         pack();
     }
 
-    private List<JRadioButton> initDataSetControls() {
+    private void runAlgorithm() {
+        // create the input context with all the needed information for execute
+        final String algorithm = buttonGroupAlgorithms.getSelection().getActionCommand();
+        final String k = buttonGroupForK.getSelection().getActionCommand();
+        final String dataSet = buttonGroupForDataSets.getSelection().getActionCommand();
+
+        // run the algorithm
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
+                if (dataSetToModel == null) {
+                    return;
+                }
+                logger.debug("Start Algorithm " + algorithm + "Event on " + dataSet + " with K= " + k);
+
+                if (AlgoType.KDegree.toString().equals(algorithm)) {
+                    long before = System.currentTimeMillis();
+                    DataSetModel annonymizeData = kDegreeAlgorithm.annonymize(dataSetToModel, Integer.valueOf(k));
+                    long after = System.currentTimeMillis();
+                    annonymizeData.setEdgeAdded(annonymizeData.getEdges().size() - dataSetToModel.getEdges().size());
+                    annonymizeData.setDuration(after-before);
+                    annonymizeData.setAnonymized(true);
+                    annonymizeData.setTitle(String.format("%s Annonymized with %s", k, algorithm));
+                    addViewToPanel(annonymizeData);
+
+                } else if (AlgoType.KNeighborhood.toString().equals(algorithm)) {
+
+                } else {
+                    logger.debug("Not valid execution.");
+                }
+            }
+        });
+        thread.start();
+    }
+
+    private void addViewToPanel(DataSetModel dataSetToModel) {
+        TableView table = new TableView(dataSetToModel);
+        JPanel chartPanel = dataSetToChartPanel.get(dataSetToModel.getDataSet());
+        chartPanel.add(table);
+        chartPanel.revalidate();
+        chartPanel.repaint();
+        logger.debug("Done Graph Event");
+    }
+
+    private void initAlgorithms() {
+        algorithmPanel = new JPanel();
+        algorithmPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), ALGORITHMS, TitledBorder.CENTER, TitledBorder.TOP));
+        algorithmPanel.setLayout(new BoxLayout(algorithmPanel, BoxLayout.Y_AXIS));
+        buttonGroupAlgorithms = new ButtonGroup();
+
+        for (AlgoType type : AlgoType.values()) {
+            JRadioButton radioButtonAlgorithm = new JRadioButton(type.name());
+            radioButtonAlgorithm.setActionCommand(AlgoType.KDegree.toString());
+            radioButtonAlgorithm.setSelected(true);
+            buttonGroupAlgorithms.add(radioButtonAlgorithm);
+            algorithmPanel.add(radioButtonAlgorithm);
+        }
+    }
+
+    private void initK() {
+        kPanel = new JPanel();
+        kPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), CHOOSE_K, TitledBorder.CENTER, TitledBorder.TOP));
+        kPanel.setLayout(new BoxLayout(kPanel, BoxLayout.Y_AXIS));
+        buttonGroupForK = new ButtonGroup();
+
+        for (int i = 1; i < 5; i++) {
+            String k = String.valueOf(i * 5);
+            JRadioButton radioButton = new JRadioButton(k);
+            radioButton.setActionCommand(k);
+            radioButton.setSelected(true);
+            buttonGroupForK.add(radioButton);
+            kPanel.add(radioButton);
+        }
+    }
+
+    private void initDataSetControls() {
+        // init main panel:
+        dataSetPickerPanel = new JPanel();
+        dataSetPickerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), DATA_SETS, TitledBorder.CENTER, TitledBorder.TOP));
+        GroupLayout layout = new GroupLayout(dataSetPickerPanel);
+        dataSetPickerPanel.setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        // init radio panel
+        JPanel radioButtonsPanel = new JPanel();
+        radioButtonsPanel.setLayout(new BoxLayout(radioButtonsPanel, BoxLayout.Y_AXIS));
+
+        // init progress panel
+        JPanel progressBarPanel = new JPanel();
+        progressBarPanel.setLayout(new BoxLayout(progressBarPanel, BoxLayout.Y_AXIS));
+
+        // init charts
+        tabbedPane = new JTabbedPane();
         dataSetsNames = dataSetController.getDataSetsNames();
-
-        dataSetsRadioButtons = new ArrayList<>();
         dataSetToProgressBar = new HashMap<>();
-
         buttonGroupForDataSets = new ButtonGroup();
+        dataSetToChartPanel = new HashMap<>();
 
+        // iterating the data sets:
         for (final String dataSet : dataSetsNames) {
             JRadioButton dataSetRadioButton = new JRadioButton(dataSet);
             dataSetRadioButton.setActionCommand(dataSet);
-
+            dataSetRadioButton.setSelected(true);
             buttonGroupForDataSets.add(dataSetRadioButton);
-            dataSetsRadioButtons.add(dataSetRadioButton);
 
             // create the data set progress bar for loading
             JProgressBar progressBar = new JProgressBar();
             progressBar.setBounds(0, 0, 100, 100);
             progressBar.setValue(0);
             progressBar.setStringPainted(true);
-            progressBar.setMaximumSize(new Dimension(130, 25));
-            progressBar.setPreferredSize(new Dimension(130, 25));
-            progressBar.setSize(new Dimension(130, 25));
+            progressBar.setMaximumSize(new Dimension(100, 25));
             dataSetToProgressBar.put(dataSet, progressBar);
 
+            // add to panel:
+            radioButtonsPanel.add(dataSetRadioButton);
+            progressBarPanel.add(progressBar);
+
+            // init the chart
+            JPanel chartsPanel = new JPanel();
+            chartsPanel.setLayout(new BoxLayout(chartsPanel, BoxLayout.X_AXIS));
+            dataSetToChartPanel.put(dataSet, chartsPanel);
+
+            // add a new tab:
+            tabbedPane.add(chartsPanel, dataSet);
+
             // load the data set into persistence
-            createDataSetTask(dataSet);
+            if (initDataSets) {
+                createDataSetTask(dataSet);
+            }
         }
 
-        dataSetsRadioButtons.get(0).setSelected(true);
-        return dataSetsRadioButtons;
+        // setting the panel layout
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+                .addComponent(radioButtonsPanel)
+                .addComponent(progressBarPanel)
+        );
+
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(radioButtonsPanel)
+                .addComponent(progressBarPanel)
+        );
     }
 
     private void createDataSetTask(String dataSet) {
@@ -317,11 +306,7 @@ public class AppFrame extends JFrame {
                     Thread thread = new Thread(new Runnable() {
                         public void run() {
                             DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
-                            TableView table = new TableView(dataSetToModel);
-                            chartsPanel.add(table);
-                            chartsPanel.revalidate();
-                            chartsPanel.repaint();
-                            logger.debug("Done Graph Event: " + dataSet);
+                            addViewToPanel(dataSetToModel);
                         }
                     });
                     thread.start();

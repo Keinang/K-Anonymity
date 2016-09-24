@@ -13,7 +13,11 @@ public class DataSetModel {
     private Set<Edge> edges;
     private Set<Vertex> vertices;
     private String title;
+    private String dataSet;
     private Map<Vertex, Set<Vertex>> vertexToNeighbors;
+    private boolean isAnonymized = false;
+    private long duration = 0;
+    private int edgeAdded;
 
     public DataSetModel() {
         edges = new HashSet<>();
@@ -82,5 +86,37 @@ public class DataSetModel {
 
     public void setVertices(Set<Vertex> vertices) {
         this.vertices = vertices;
+    }
+
+    public String getDataSet() {
+        return dataSet;
+    }
+
+    public void setDataSet(String dataSet) {
+        this.dataSet = dataSet;
+    }
+
+    public boolean isAnonymized() {
+        return isAnonymized;
+    }
+
+    public void setAnonymized(boolean anonymized) {
+        isAnonymized = anonymized;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setEdgeAdded(int edgeAdded) {
+        this.edgeAdded = edgeAdded;
+    }
+
+    public int getEdgeAdded() {
+        return edgeAdded;
     }
 }

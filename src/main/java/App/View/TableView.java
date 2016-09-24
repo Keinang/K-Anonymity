@@ -3,6 +3,7 @@ package App.View;
 import App.Model.DataSetModel;
 import App.Model.Vertex;
 import App.Utils.DemoDataCreator;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -18,6 +19,7 @@ import static App.Controller.DataSetController.getDegreeFreq;
 public class TableView extends JPanel {
     public static final String VERTICES = "Vertices";
     public static final String DEGREE = "Degree";
+    public static final String VERTEX = "Vertex";
     public static final String TOTAL_EDGES = "Total Edges:";
     public static final String TOTAL_VERTICES = "Total Vertices:";
 
@@ -25,13 +27,171 @@ public class TableView extends JPanel {
         setUI(dataSetToModel);
     }
 
-    private Object[][] prepareModel(DataSetModel dataSetToModel) {
-        // get dataset model:
+    private void setUI(DataSetModel dataSetModel) {
+        // create container
+        GroupLayout layout = new GroupLayout(this);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+        this.setLayout(layout);
+
+        // add tables
+        JScrollPane degreeToVerticesPane = addDegreeToVerticesTable(dataSetModel);
+        JScrollPane vertexToVerticesPane = addVertexToVerticesTable(dataSetModel);
+        JPanel indicationsPanel = addIndicationPanel(dataSetModel);
+
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+                .addComponent(degreeToVerticesPane)
+                .addComponent(vertexToVerticesPane)
+                .addComponent(indicationsPanel)
+        );
+
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(degreeToVerticesPane)
+                .addComponent(vertexToVerticesPane)
+                .addComponent(indicationsPanel)
+        );
+    }
+
+    private JPanel addIndicationPanel(DataSetModel dataSetModel) {
+        JPanel indicationPanel = new JPanel();
+        GroupLayout layout = new GroupLayout(indicationPanel);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+        indicationPanel.setLayout(layout);
+
+        // Total values:
+        JLabel totalVerticesLabel = new JLabel(TOTAL_VERTICES);
+        JLabel totalVerticesLabelValue = new JLabel(String.valueOf(dataSetModel.getVertices().size()));
+
+        int totalEdges = dataSetModel.getEdges().size();
+        JLabel totalEdgesLabel = new JLabel(TOTAL_EDGES);
+        JLabel totalEdgesLabelValue = new JLabel(String.valueOf(totalEdges));
+
+        // Values after running the algorithm
+        JLabel durationLabel = new JLabel("Duration");
+        JLabel durationLabelValue = new JLabel(String.valueOf(dataSetModel.getDuration()) + "ms");
+
+        int edgeAdded = dataSetModel.getEdgeAdded();
+        JLabel edgesAddedLabel = new JLabel("Edges added");
+        JLabel edgesAddedLabelValue = new JLabel(String.valueOf(edgeAdded));
+
+        int beforeEdges = totalEdges - edgeAdded;
+        int percentageAdded = (edgeAdded / beforeEdges) * 100;
+        JLabel edgesAddedPercentageLabel = new JLabel("Edges added Percentage");
+        JLabel edgesAddedPercentageLabelValue = new JLabel(String.valueOf(percentageAdded) + "%");
+
+        JLabel obfuscationLeveldLabel = new JLabel("Obfuscation Level");
+        JLabel obfuscationLeveldLabelValue = new JLabel();
+
+        // set components in layout
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(totalVerticesLabel)
+                        .addComponent(totalEdgesLabel)
+                        .addComponent(durationLabel)
+                        .addComponent(edgesAddedLabel)
+                        .addComponent(edgesAddedPercentageLabel)
+                        .addComponent(obfuscationLeveldLabel)
+                )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(totalVerticesLabelValue)
+                        .addComponent(totalEdgesLabelValue)
+                        .addComponent(durationLabelValue)
+                        .addComponent(edgesAddedLabelValue)
+                        .addComponent(edgesAddedPercentageLabelValue)
+                        .addComponent(obfuscationLeveldLabelValue)
+                )
+        );
+
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(totalVerticesLabel)
+                        .addComponent(totalVerticesLabelValue)
+                )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(totalEdgesLabel)
+                        .addComponent(totalEdgesLabelValue)
+                )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(durationLabel)
+                        .addComponent(durationLabelValue)
+                )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(edgesAddedLabel)
+                        .addComponent(edgesAddedLabelValue)
+                )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(edgesAddedPercentageLabel)
+                        .addComponent(edgesAddedPercentageLabelValue)
+                )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(obfuscationLeveldLabel)
+                        .addComponent(obfuscationLeveldLabelValue)
+                )
+
+        );
+        return indicationPanel;
+    }
+
+    private JScrollPane addVertexToVerticesTable(DataSetModel dataSetModel) {
+        Object[][] rowData = prepareVertexToVerticesModel(dataSetModel);
+        Object columnNames[] = {VERTEX, VERTICES};
+        return createTable(dataSetModel.getTitle(), rowData, columnNames);
+    }
+
+    @NotNull
+    private JScrollPane addDegreeToVerticesTable(DataSetModel dataSetModel) {
+        Object[][] rowData = prepareDegreeToVerticesModel(dataSetModel);
+        Object columnNames[] = {DEGREE, VERTICES};
+        return createTable(dataSetModel.getTitle(), rowData, columnNames);
+    }
+
+    @NotNull
+    private JScrollPane createTable(String title, final Object[][] rowData, Object[] columnNames) {
+        DefaultTableModel model = new DefaultTableModel(rowData, columnNames) {
+            @Override
+            public Class getColumnClass(int column) {
+                return Integer.class;
+            }
+        };
+        JTable table = new JTable(model);
+        this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title, TitledBorder.CENTER, TitledBorder.TOP));
+        table.setPreferredScrollableViewportSize(table.getPreferredSize());
+        table.setFillsViewportHeight(true);
+        table.setAutoCreateRowSorter(true);
+        //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.getRowSorter().toggleSortOrder(0);
+
+        // add the scroll pane wrapper:
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setPreferredSize(new Dimension(320, 240));
+        scrollPane.setVisible(true);
+        return scrollPane;
+    }
+
+    private Object[][] prepareVertexToVerticesModel(DataSetModel dataSetToModel) {
+        Map<Vertex, Set<Vertex>> vertexToNeighbors = dataSetToModel.getVertexToNeighbors();
+        Set<Vertex> vertices = vertexToNeighbors.keySet();
+        Iterator<Vertex> iterator = vertices.iterator();
+        Object rowData[][] = new Object[vertices.size()][2];
+
+        int i = 0;
+        while (iterator.hasNext()) {
+            Vertex vertex = iterator.next();
+            Set<Vertex> verticesNeighborsSet = vertexToNeighbors.get(vertex);
+            rowData[i] = new Object[]{Integer.valueOf(vertex.getName()), Arrays.toString(verticesNeighborsSet.toArray())};
+            i++;
+        }
+        return rowData;
+    }
+
+    private Object[][] prepareDegreeToVerticesModel(DataSetModel dataSetToModel) {
+        // get data set model:
         Map<Vertex, Set<Vertex>> vertexToNeighbors = dataSetToModel.getVertexToNeighbors();
         Collection<Set<Vertex>> vertexDegreesValues = vertexToNeighbors.values();
         ArrayList<Integer> allDegreesWithDuplicates = new ArrayList<>();
         Iterator<Set<Vertex>> vertexDegreesValuesIter = vertexDegreesValues.iterator();
-        while (vertexDegreesValuesIter.hasNext()){
+        while (vertexDegreesValuesIter.hasNext()) {
             allDegreesWithDuplicates.add(vertexDegreesValuesIter.next().size());
         }
 
@@ -52,68 +212,6 @@ public class TableView extends JPanel {
             i++;
         }
         return rowData;
-    }
-
-    private void setUI(DataSetModel dataSetModel) {
-        GroupLayout layout = new GroupLayout(this);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-        this.setLayout(layout);
-        Object[][] rowData = prepareModel(dataSetModel);
-
-        // create table:
-        Object columnNames[] = {DEGREE, VERTICES};
-
-        DefaultTableModel model = new DefaultTableModel(rowData, columnNames) {
-            @Override
-            public Class getColumnClass(int column) {
-                return Integer.class;
-            }
-        };
-        JTable table = new JTable(model);
-        this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), dataSetModel.getTitle(), TitledBorder.CENTER, TitledBorder.TOP));
-        table.setPreferredScrollableViewportSize(table.getPreferredSize());
-        table.setFillsViewportHeight(true);
-        table.setAutoCreateRowSorter(true);
-        table.getRowSorter().toggleSortOrder(0);
-
-        // scroll:
-        JScrollPane jScrollPane = new JScrollPane(table);
-        jScrollPane.setPreferredSize(new Dimension(320, 240));
-        jScrollPane.setVisible(true);
-
-        // labels:
-        JLabel beforeVerticesLabel = new JLabel(TOTAL_VERTICES);
-        JLabel beforeVerticesLabelValue = new JLabel(String.valueOf(dataSetModel.getVertices().size()));
-        JLabel beforeEdgesLabel = new JLabel(TOTAL_EDGES);
-        JLabel beforeEdgesLabelValue = new JLabel(String.valueOf(dataSetModel.getEdges().size()));
-
-        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane)
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(beforeVerticesLabel)
-                                .addComponent(beforeEdgesLabel)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(beforeVerticesLabelValue)
-                                .addComponent(beforeEdgesLabelValue)
-                        )
-                ));
-
-        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(jScrollPane)
-                .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(beforeVerticesLabel)
-                                .addComponent(beforeVerticesLabelValue)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(beforeEdgesLabel)
-                                .addComponent(beforeEdgesLabelValue)
-                        )
-                )
-        );
     }
 
     public static void main(String[] args) {
@@ -143,7 +241,7 @@ Labels for tableView after executing the algorithm
 .addComponent(afterEdgesLabelValue)
 .addComponent(afterEdgesAddedLabelValue)
 .addComponent(afterEdgesRemovedLabelValue)
-.addComponent(afterObfuscationLeveldLabelValue)
+.addComponent(afterObfuscationLevelLabelValue)
 
 
 .addComponent(durationLabel)
@@ -153,4 +251,7 @@ Labels for tableView after executing the algorithm
 .addComponent(afterEdgesLabel)
 .addComponent(afterEdgesAddedLabel)
 .addComponent(afterEdgesRemovedLabel)
-.addComponent(afterObfuscationLeveldLabel)*/
+.addComponent(afterObfuscationLevelLabel)
+
+
+*/

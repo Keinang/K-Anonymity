@@ -15,6 +15,7 @@ import java.util.*;
  */
 public class KDegreeAlgorithm {
     private static Logger logger = Logger.getLogger(KDegreeAlgorithm.class);
+    public static final int NOISE_ADDITION = 10;
     private static final Random position = new Random();
 
     /**
@@ -43,10 +44,14 @@ public class KDegreeAlgorithm {
     private void addNoise(DataSetModel originalGraph) {
         Set<Vertex> vertices = originalGraph.getVertices();
         List<Vertex> vertexList = new ArrayList<>(vertices);
-        int size = vertices.size();
-        int xIdx = position.nextInt(size);
-        int yIdx = position.nextInt(size);
-        originalGraph.addEdge(vertexList.get(xIdx), vertexList.get(yIdx));
+
+        int edgeAdditions = position.nextInt(NOISE_ADDITION);
+        for (int i = 0; i < edgeAdditions; i++) {
+            int size = vertices.size();
+            int xIdx = position.nextInt(size);
+            int yIdx = position.nextInt(size);
+            originalGraph.addEdge(vertexList.get(xIdx), vertexList.get(yIdx));
+        }
     }
 
     /**
@@ -83,7 +88,7 @@ public class KDegreeAlgorithm {
         DegreeContext[] anonymizedDegrees = new DegreeContext[originalDegrees.length];
         for (int i = 0; i < originalDegrees.length; i++) {
             DegreeContext originalDegree = originalDegrees[i];
-            anonymizedDegrees[i] = new DegreeContext(originalDegree.getVertex(), originalDegree.getDegree());
+            anonymizedDegrees[i] = new DegreeContext(new Vertex(originalDegree.getVertex().getName()), originalDegree.getDegree());
         }
 
         int size = anonymizedDegrees.length;
