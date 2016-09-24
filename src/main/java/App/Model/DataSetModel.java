@@ -1,5 +1,6 @@
 package App.Model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,7 +9,7 @@ import java.util.Set;
 /**
  * Created by Keinan.Gilad on 9/18/2016.
  */
-public class DataSetModel {
+public class DataSetModel implements Serializable {
 
     private Set<Edge> edges;
     private Set<Vertex> vertices;

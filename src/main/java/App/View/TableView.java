@@ -76,7 +76,7 @@ public class TableView extends JPanel {
         JLabel edgesAddedLabelValue = new JLabel(String.valueOf(edgeAdded));
 
         int beforeEdges = totalEdges - edgeAdded;
-        int percentageAdded = (edgeAdded / beforeEdges) * 100;
+        float percentageAdded = (edgeAdded * 100.0f  / beforeEdges);
         JLabel edgesAddedPercentageLabel = new JLabel("Edges added Percentage");
         JLabel edgesAddedPercentageLabelValue = new JLabel(String.valueOf(percentageAdded) + "%");
 

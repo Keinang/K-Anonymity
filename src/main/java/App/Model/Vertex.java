@@ -1,9 +1,11 @@
 package App.Model;
 
+import java.io.Serializable;
+
 /**
  * Created by Keinan.Gilad on 9/18/2016.
  */
-public class Vertex {
+public class Vertex implements Serializable {
     private String name;
 
     public Vertex(String name) {

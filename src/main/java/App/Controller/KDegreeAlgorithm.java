@@ -88,7 +88,7 @@ public class KDegreeAlgorithm {
         DegreeContext[] anonymizedDegrees = new DegreeContext[originalDegrees.length];
         for (int i = 0; i < originalDegrees.length; i++) {
             DegreeContext originalDegree = originalDegrees[i];
-            anonymizedDegrees[i] = new DegreeContext(new Vertex(originalDegree.getVertex().getName()), originalDegree.getDegree());
+            anonymizedDegrees[i] = new DegreeContext(originalDegree.getVertex(), originalDegree.getDegree());
         }
 
         int size = anonymizedDegrees.length;

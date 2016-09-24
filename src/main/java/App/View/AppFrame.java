@@ -5,6 +5,7 @@ import App.Controller.KDegreeAlgorithm;
 import App.Model.AlgoType;
 import App.Model.DataSetModel;
 import App.UITasks.DataSetLoaderTask;
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -157,14 +158,15 @@ public class AppFrame extends JFrame {
                 if (dataSetToModel == null) {
                     return;
                 }
+                DataSetModel originalClone = (DataSetModel) SerializationUtils.clone(dataSetToModel);
                 logger.debug("Start Algorithm " + algorithm + "Event on " + dataSet + " with K= " + k);
 
                 if (AlgoType.KDegree.toString().equals(algorithm)) {
                     long before = System.currentTimeMillis();
-                    DataSetModel annonymizeData = kDegreeAlgorithm.annonymize(dataSetToModel, Integer.valueOf(k));
+                    DataSetModel annonymizeData = kDegreeAlgorithm.annonymize(originalClone, Integer.valueOf(k));
                     long after = System.currentTimeMillis();
                     annonymizeData.setEdgeAdded(annonymizeData.getEdges().size() - dataSetToModel.getEdges().size());
-                    annonymizeData.setDuration(after-before);
+                    annonymizeData.setDuration(after - before);
                     annonymizeData.setAnonymized(true);
                     annonymizeData.setTitle(String.format("%s Annonymized with %s", k, algorithm));
                     addViewToPanel(annonymizeData);

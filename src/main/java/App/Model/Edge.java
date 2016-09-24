@@ -1,9 +1,11 @@
 package App.Model;
 
+import java.io.Serializable;
+
 /**
  * Created by Keinan.Gilad on 9/17/2016.
  */
-public class Edge {
+public class Edge implements Serializable {
 
     private Vertex v0;
     private Vertex v1;
