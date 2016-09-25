@@ -44,7 +44,7 @@ public class AppFrame extends JFrame {
     private ButtonGroup buttonGroupForK;
     private ButtonGroup buttonGroupForDataSets;
     private HashMap<String, JProgressBar> dataSetToProgressBar;
-    private HashMap<String, JPanel> dataSetToChartPanel;
+    private HashMap<String, JComponent> dataSetToChartPanel;
     private JTabbedPane tabbedPane;
     private JPanel dataSetPickerPanel;
     private JPanel kPanel;
@@ -183,7 +183,7 @@ public class AppFrame extends JFrame {
 
     private void addViewToPanel(DataSetModel dataSetToModel) {
         TableView table = new TableView(dataSetToModel);
-        JPanel chartPanel = dataSetToChartPanel.get(dataSetToModel.getDataSet());
+        JPanel chartPanel = (JPanel) dataSetToChartPanel.get(dataSetToModel.getDataSet());
         chartPanel.add(table);
         chartPanel.revalidate();
         chartPanel.repaint();
@@ -266,7 +266,9 @@ public class AppFrame extends JFrame {
 
             // init the chart
             JPanel chartsPanel = new JPanel();
-            chartsPanel.setLayout(new BoxLayout(chartsPanel, BoxLayout.X_AXIS));
+            chartsPanel.setPreferredSize(new Dimension(500, 500));
+            chartsPanel.setLayout(new GridLayout(0, 3));
+            chartsPanel.setAutoscrolls(true);
             dataSetToChartPanel.put(dataSet, chartsPanel);
 
             // add a new tab:

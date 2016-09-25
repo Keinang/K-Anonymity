@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.*;
 
@@ -30,8 +32,6 @@ public class TableView extends JPanel {
     private void setUI(DataSetModel dataSetModel) {
         // create container
         GroupLayout layout = new GroupLayout(this);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
         this.setLayout(layout);
 
         // add tables
@@ -69,16 +69,11 @@ public class TableView extends JPanel {
 
         // Values after running the algorithm
         JLabel durationLabel = new JLabel("Duration");
-        JLabel durationLabelValue = new JLabel(String.valueOf(dataSetModel.getDuration()) + "ms");
+        JLabel durationLabelValue = new JLabel(String.format("%ssec", dataSetModel.getDuration() / 1000.0f));
 
-        int edgeAdded = dataSetModel.getEdgeAdded();
-        JLabel edgesAddedLabel = new JLabel("Edges added");
-        JLabel edgesAddedLabelValue = new JLabel(String.valueOf(edgeAdded));
-
-        int beforeEdges = totalEdges - edgeAdded;
-        float percentageAdded = (edgeAdded * 100.0f  / beforeEdges);
-        JLabel edgesAddedPercentageLabel = new JLabel("Edges added Percentage");
-        JLabel edgesAddedPercentageLabelValue = new JLabel(String.valueOf(percentageAdded) + "%");
+        Integer edgeAdded = dataSetModel.getEdgeAdded();
+        JLabel edgesAddedLabel = new JLabel("Edges added (%)");
+        JLabel edgesAddedLabelValue = new JLabel(String.format("%s (%.2f%s)", edgeAdded, ((edgeAdded * 100.0f / (totalEdges - edgeAdded))), "%"));
 
         JLabel obfuscationLeveldLabel = new JLabel("Obfuscation Level");
         JLabel obfuscationLeveldLabelValue = new JLabel();
@@ -90,7 +85,6 @@ public class TableView extends JPanel {
                         .addComponent(totalEdgesLabel)
                         .addComponent(durationLabel)
                         .addComponent(edgesAddedLabel)
-                        .addComponent(edgesAddedPercentageLabel)
                         .addComponent(obfuscationLeveldLabel)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -98,7 +92,6 @@ public class TableView extends JPanel {
                         .addComponent(totalEdgesLabelValue)
                         .addComponent(durationLabelValue)
                         .addComponent(edgesAddedLabelValue)
-                        .addComponent(edgesAddedPercentageLabelValue)
                         .addComponent(obfuscationLeveldLabelValue)
                 )
         );
@@ -119,10 +112,6 @@ public class TableView extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(edgesAddedLabel)
                         .addComponent(edgesAddedLabelValue)
-                )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(edgesAddedPercentageLabel)
-                        .addComponent(edgesAddedPercentageLabelValue)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(obfuscationLeveldLabel)
@@ -151,20 +140,32 @@ public class TableView extends JPanel {
         DefaultTableModel model = new DefaultTableModel(rowData, columnNames) {
             @Override
             public Class getColumnClass(int column) {
-                return Integer.class;
+                if (column == 0) {
+                    return Integer.class;
+                }
+                return String.class;
             }
         };
-        JTable table = new JTable(model);
+
+        JTable table = new JTable(model) {
+
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component component = super.prepareRenderer(renderer, row, column);
+                int rendererWidth = component.getPreferredSize().width;
+                TableColumn tableColumn = getColumnModel().getColumn(column);
+                tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+                return component;
+            }
+        };
         this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title, TitledBorder.CENTER, TitledBorder.TOP));
         table.setPreferredScrollableViewportSize(table.getPreferredSize());
         table.setFillsViewportHeight(true);
         table.setAutoCreateRowSorter(true);
-        //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getRowSorter().toggleSortOrder(0);
-
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         // add the scroll pane wrapper:
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setPreferredSize(new Dimension(320, 240));
         scrollPane.setVisible(true);
         return scrollPane;
     }
@@ -230,28 +231,3 @@ public class TableView extends JPanel {
         jf.setVisible(true);
     }
 }
-
-
-/*
-Labels for tableView after executing the algorithm
-.addComponent(durationLabelValue)
-.addComponent(afterVerticesLabelValue)
-.addComponent(afterVerticesAddedLabelValue)
-.addComponent(afterVerticesRemovedLabelValue)
-.addComponent(afterEdgesLabelValue)
-.addComponent(afterEdgesAddedLabelValue)
-.addComponent(afterEdgesRemovedLabelValue)
-.addComponent(afterObfuscationLevelLabelValue)
-
-
-.addComponent(durationLabel)
-.addComponent(afterVerticesLabel)
-.addComponent(afterVerticesAddedLabel)
-.addComponent(afterVerticesRemovedLabel)
-.addComponent(afterEdgesLabel)
-.addComponent(afterEdgesAddedLabel)
-.addComponent(afterEdgesRemovedLabel)
-.addComponent(afterObfuscationLevelLabel)
-
-
-*/
