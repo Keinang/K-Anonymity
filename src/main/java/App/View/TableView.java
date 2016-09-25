@@ -22,8 +22,8 @@ public class TableView extends JPanel {
     public static final String VERTICES = "Vertices";
     public static final String DEGREE = "Degree";
     public static final String VERTEX = "Vertex";
-    public static final String TOTAL_EDGES = "Total Edges:";
-    public static final String TOTAL_VERTICES = "Total Vertices:";
+    public static final String TOTAL_EDGES = "Total Edges";
+    public static final String TOTAL_VERTICES = "Total Vertices";
 
     public TableView(DataSetModel dataSetToModel) {
         setUI(dataSetToModel);

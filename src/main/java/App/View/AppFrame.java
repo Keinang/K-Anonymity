@@ -6,6 +6,7 @@ import App.Model.AlgoType;
 import App.Model.DataSetModel;
 import App.UITasks.DataSetLoaderTask;
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,6 +24,8 @@ import java.util.List;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class AppFrame extends JFrame {
+    public static final String RUNNING = "Running...";
+    public static final String INITIALIZING = "Initializing...";
     private static Logger logger = Logger.getLogger(AppFrame.class);
     public static final String ORIGINAL_CHARTS = "Original Charts";
     public static final String EXECUTE = "Execute";
@@ -49,6 +52,8 @@ public class AppFrame extends JFrame {
     private JPanel dataSetPickerPanel;
     private JPanel kPanel;
     private JPanel algorithmPanel;
+    private JLabel executeStatusLabel;
+    private JButton executeButton;
 
     @SuppressWarnings("ALL")
     public void initUIComponents() {
@@ -63,6 +68,15 @@ public class AppFrame extends JFrame {
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
+        // execute button
+        executeStatusLabel = new JLabel();
+        executeButton = new JButton(EXECUTE);
+        executeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runAlgorithm();
+            }
+        });
+
         // radio buttons for algorithms
         initAlgorithms();
 
@@ -74,14 +88,6 @@ public class AppFrame extends JFrame {
 
         JSeparator sp1 = new JSeparator();
 
-        // execute button
-        final JButton executeButton = new JButton(EXECUTE);
-        executeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                runAlgorithm();
-            }
-        });
-
         // setting the Layout
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
@@ -90,7 +96,11 @@ public class AppFrame extends JFrame {
                                 .addComponent(algorithmPanel)
 
                                 // level 2
-                                .addComponent(executeButton)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(executeButton)
+                                        .addComponent(executeStatusLabel)
+                                )
+
                         )
                         // column 1
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -122,6 +132,7 @@ public class AppFrame extends JFrame {
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(executeButton)
+                                .addComponent(executeStatusLabel)
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(sp1)
@@ -151,6 +162,9 @@ public class AppFrame extends JFrame {
         final String k = buttonGroupForK.getSelection().getActionCommand();
         final String dataSet = buttonGroupForDataSets.getSelection().getActionCommand();
 
+        // set busy indication
+        setBusyIndication(RUNNING, false);
+
         // run the algorithm
         Thread thread = new Thread(new Runnable() {
             public void run() {
@@ -164,6 +178,7 @@ public class AppFrame extends JFrame {
                 if (AlgoType.KDegree.toString().equals(algorithm)) {
                     long before = System.currentTimeMillis();
                     DataSetModel annonymizeData = kDegreeAlgorithm.annonymize(originalClone, Integer.valueOf(k));
+                    // done.
                     long after = System.currentTimeMillis();
                     annonymizeData.setEdgeAdded(annonymizeData.getEdges().size() - dataSetToModel.getEdges().size());
                     annonymizeData.setDuration(after - before);
@@ -176,9 +191,17 @@ public class AppFrame extends JFrame {
                 } else {
                     logger.debug("Not valid execution.");
                 }
+
+                // finish busy indication
+                setBusyIndication(StringUtils.EMPTY, true);
             }
         });
         thread.start();
+    }
+
+    private void setBusyIndication(String text, boolean isEnabled) {
+        executeStatusLabel.setText(text);
+        executeButton.setEnabled(isEnabled);
     }
 
     private void addViewToPanel(DataSetModel dataSetToModel) {
@@ -198,7 +221,7 @@ public class AppFrame extends JFrame {
 
         for (AlgoType type : AlgoType.values()) {
             JRadioButton radioButtonAlgorithm = new JRadioButton(type.name());
-            radioButtonAlgorithm.setActionCommand(AlgoType.KDegree.toString());
+            radioButtonAlgorithm.setActionCommand(type.name());
             radioButtonAlgorithm.setSelected(true);
             buttonGroupAlgorithms.add(radioButtonAlgorithm);
             algorithmPanel.add(radioButtonAlgorithm);
@@ -222,6 +245,9 @@ public class AppFrame extends JFrame {
     }
 
     private void initDataSetControls() {
+        // set busy indication
+        setBusyIndication(INITIALIZING, false);
+
         // init main panel:
         dataSetPickerPanel = new JPanel();
         dataSetPickerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), DATA_SETS, TitledBorder.CENTER, TitledBorder.TOP));
@@ -311,6 +337,7 @@ public class AppFrame extends JFrame {
                         public void run() {
                             DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
                             addViewToPanel(dataSetToModel);
+                            setBusyIndication(StringUtils.EMPTY, true);
                         }
                     });
                     thread.start();
