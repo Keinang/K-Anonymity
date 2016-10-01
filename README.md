@@ -1,8 +1,16 @@
 # K-Anonymity 
+A simulator for preserving anonymity on social networks.
   
 ## How to run  
-  
-## Features  
+Run Main.main()
+
+## Algorithms  
+### K-Degree Generalization 
+Based on K. Liu and E. Terzi. Towards identity anonymization on graphs.
+
+### K-Neighborhood Anonymity
+Based on B. Zhou and J. Pei. 
+Preserving privacy in social networks against neighborhood attacks
 
 ## Data Sets  
 ### Facebook circles  

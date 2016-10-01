@@ -24,10 +24,9 @@ import java.util.List;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class AppFrame extends JFrame {
+    private static Logger logger = Logger.getLogger(AppFrame.class);
     public static final String RUNNING = "Running...";
     public static final String INITIALIZING = "Initializing...";
-    private static Logger logger = Logger.getLogger(AppFrame.class);
-    public static final String ORIGINAL_CHARTS = "Original Charts";
     public static final String EXECUTE = "Execute";
     public static final String ABOUT_TEXT = "Written by Keinan Gilad (keinan.gilad@gmail.com) for MSc in open university.";
     public static final String ALGORITHMS = "Algorithms";
@@ -173,7 +172,7 @@ public class AppFrame extends JFrame {
                     return;
                 }
                 DataSetModel originalClone = (DataSetModel) SerializationUtils.clone(dataSetToModel);
-                logger.debug("Start Algorithm " + algorithm + "Event on " + dataSet + " with K= " + k);
+                logger.debug(String.format("Start Algorithm %s on dataSet %s with K eqaul to %s", algorithm, dataSet, k));
 
                 if (AlgoType.KDegree.toString().equals(algorithm)) {
                     long before = System.currentTimeMillis();
@@ -210,7 +209,7 @@ public class AppFrame extends JFrame {
         chartPanel.add(table);
         chartPanel.revalidate();
         chartPanel.repaint();
-        logger.debug("Done Graph Event");
+        logger.debug(String.format("Done adding new chart %s", dataSetToModel.getDataSet()));
     }
 
     private void initAlgorithms() {
@@ -332,7 +331,7 @@ public class AppFrame extends JFrame {
                     progressBar.setValue(progress);
                     //logger.debug("Progress DataSet Event: " + dataSet + " Progress:" + progress);
                 } else if ("done".equals(propertyName)) {
-                    logger.debug("Start Graph Event: " + dataSet);
+                    logger.debug(String.format("Start Graph Event on %s ", dataSet));
                     Thread thread = new Thread(new Runnable() {
                         public void run() {
                             DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);

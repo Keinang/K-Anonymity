@@ -34,7 +34,8 @@ public class KDegreeAlgorithm {
             annoymizeGraph = supergraph(originalGraph, annonymizeDegreeVector);
             return annoymizeGraph;
         } catch (NotRealizedGraphException e) {
-            logger.debug(e.getMessage());
+            //logger.debug(e.getMessage());
+
             // add noise to original graph and trying again
             addNoise(originalGraph);
             return annonymize(originalGraph, k);
