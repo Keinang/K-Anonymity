@@ -1,4 +1,4 @@
-package App.Model;
+package App.Exceptions;
 
 /**
  * Created by Keinan.Gilad on 9/23/2016.

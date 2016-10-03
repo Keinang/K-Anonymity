@@ -2,7 +2,7 @@ package App.Controller;
 
 import App.Model.DataSetModel;
 import App.Model.DegreeContext;
-import App.Model.NotRealizedGraphException;
+import App.Exceptions.NotRealizedGraphException;
 import App.Model.Vertex;
 import App.Utils.DemoDataCreator;
 import org.apache.log4j.BasicConfigurator;
@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * Created by Keinan.Gilad on 9/23/2016.
  */
-public class KDegreeAlgorithm {
+public class KDegreeAlgorithm implements IAlgorithm{
     private static Logger logger = Logger.getLogger(KDegreeAlgorithm.class);
     public static final int NOISE_ADDITION = 10;
     private static final Random position = new Random();
@@ -25,6 +25,7 @@ public class KDegreeAlgorithm {
      * @param k
      * @return anonymized graph
      */
+    @Override
     public DataSetModel annonymize(DataSetModel originalGraph, Integer k) {
         DegreeContext[] originalDegrees = getDegreeVector(originalGraph);
         DegreeContext[] annonymizeDegreeVector = degreeAnonymization(originalDegrees, k);

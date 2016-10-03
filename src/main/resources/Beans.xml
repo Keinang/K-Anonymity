@@ -11,5 +11,6 @@
     <bean id="DataSetController" class="App.Controller.DataSetController"/>
     <bean id="AppFrame" class="App.View.AppFrame"/>
     <bean id="kdegree" class="App.Controller.KDegreeAlgorithm"/>
+    <bean id="kNeighborhood" class="App.Controller.KNeighborhoodAlgorithm"/>
 
 </beans>
