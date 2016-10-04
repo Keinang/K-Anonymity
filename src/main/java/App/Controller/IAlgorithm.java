@@ -1,11 +1,11 @@
 package App.Controller;
 
-import App.Model.DataSetModel;
+import App.Model.Graph;
 
 /**
  * Created by Keinan.Gilad on 10/1/2016.
  */
 public interface IAlgorithm {
 
-    DataSetModel annonymize(DataSetModel originalGraph, Integer k);
+    Graph anonymize(Graph originalGraph, Integer k);
 }

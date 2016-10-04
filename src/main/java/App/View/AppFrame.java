@@ -4,7 +4,7 @@ import App.Controller.DataSetController;
 import App.Controller.KDegreeAlgorithm;
 import App.Controller.KNeighborhoodAlgorithm;
 import App.Model.AlgoType;
-import App.Model.DataSetModel;
+import App.Model.Graph;
 import App.UITasks.DataSetLoaderTask;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
@@ -171,23 +171,26 @@ public class AppFrame extends JFrame {
         // run the algorithm
         Thread thread = new Thread(new Runnable() {
             public void run() {
-                DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
+                Graph dataSetToModel = dataSetController.getDataSetToModel(dataSet);
                 if (dataSetToModel == null) {
                     return;
                 }
-                DataSetModel originalClone = (DataSetModel) SerializationUtils.clone(dataSetToModel);
+                Graph originalClone = (Graph) SerializationUtils.clone(dataSetToModel);
                 logger.debug(String.format("Start Algorithm %s on dataSet %s with K eqaul to %s", algorithm, dataSet, k));
                 long before = System.currentTimeMillis();
+                Graph anonymizeData = null;
 
                 if (AlgoType.KDegree.toString().equals(algorithm)) {
-                    DataSetModel annonymizeData = kDegreeAlgorithm.annonymize(originalClone, Integer.valueOf(k));
-                    addViewToPanel(annonymizeData, before, algorithm, k);
+                    anonymizeData = kDegreeAlgorithm.anonymize(originalClone, Integer.valueOf(k));
 
                 } else if (AlgoType.KNeighborhood.toString().equals(algorithm)) {
-                    DataSetModel annonymizeData = kNeighborhoodAlgorithm.annonymize(originalClone, Integer.valueOf(k));
-                    addViewToPanel(annonymizeData, before, algorithm, k);
+                    anonymizeData = kNeighborhoodAlgorithm.anonymize(originalClone, Integer.valueOf(k));
+
                 } else {
                     logger.debug("Not valid execution.");
+                }
+                if (anonymizeData != null){
+                    addViewToPanel(anonymizeData, before, algorithm, k);
                 }
 
                 // finish busy indication
@@ -202,7 +205,7 @@ public class AppFrame extends JFrame {
         executeButton.setEnabled(isEnabled);
     }
 
-    private void addViewToPanel(DataSetModel dataSetToModel, long before, String algorithm, String k) {
+    private void addViewToPanel(Graph dataSetToModel, long before, String algorithm, String k) {
         if (before > 0) {
             dataSetToModel.setEdgeAdded(dataSetToModel.getEdges().size() - dataSetToModel.getEdges().size());
             long after = System.currentTimeMillis();
@@ -211,7 +214,7 @@ public class AppFrame extends JFrame {
         }
 
         if (StringUtils.isNotEmpty(algorithm) && StringUtils.isNotEmpty(k)) {
-            dataSetToModel.setTitle(String.format("%s Annonymized with %s", k, algorithm));
+            dataSetToModel.setTitle(String.format("%s Anonymized with %s", k, algorithm));
         }
 
         TableView table = new TableView(dataSetToModel);
@@ -344,7 +347,7 @@ public class AppFrame extends JFrame {
                     logger.debug(String.format("Start Graph Event on %s ", dataSet));
                     Thread thread = new Thread(new Runnable() {
                         public void run() {
-                            DataSetModel dataSetToModel = dataSetController.getDataSetToModel(dataSet);
+                            Graph dataSetToModel = dataSetController.getDataSetToModel(dataSet);
                             addViewToPanel(dataSetToModel, 0, null, null);
                             setBusyIndication(StringUtils.EMPTY, true);
                         }

@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * Created by Keinan.Gilad on 9/18/2016.
  */
-public class DataSetModel implements Serializable {
+public class Graph implements Serializable {
 
     private Set<Edge> edges;
     private Set<Vertex> vertices;
@@ -20,7 +20,7 @@ public class DataSetModel implements Serializable {
     private long duration = 0;
     private int edgeAdded;
 
-    public DataSetModel() {
+    public Graph() {
         edges = new HashSet<>();
         vertices = new HashSet<>();
         vertexToNeighbors = new HashMap<>();

@@ -1,6 +1,6 @@
 package App.View;
 
-import App.Model.DataSetModel;
+import App.Model.Graph;
 import App.Model.Vertex;
 import App.Utils.DemoDataCreator;
 import org.jetbrains.annotations.NotNull;
@@ -25,11 +25,11 @@ public class TableView extends JPanel {
     public static final String TOTAL_EDGES = "Total Edges";
     public static final String TOTAL_VERTICES = "Total Vertices";
 
-    public TableView(DataSetModel dataSetToModel) {
+    public TableView(Graph dataSetToModel) {
         setUI(dataSetToModel);
     }
 
-    private void setUI(DataSetModel dataSetModel) {
+    private void setUI(Graph dataSetModel) {
         // create container
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -52,7 +52,7 @@ public class TableView extends JPanel {
         );
     }
 
-    private JPanel addIndicationPanel(DataSetModel dataSetModel) {
+    private JPanel addIndicationPanel(Graph dataSetModel) {
         JPanel indicationPanel = new JPanel();
         GroupLayout layout = new GroupLayout(indicationPanel);
         layout.setAutoCreateGaps(true);
@@ -122,14 +122,14 @@ public class TableView extends JPanel {
         return indicationPanel;
     }
 
-    private JScrollPane addVertexToVerticesTable(DataSetModel dataSetModel) {
+    private JScrollPane addVertexToVerticesTable(Graph dataSetModel) {
         Object[][] rowData = prepareVertexToVerticesModel(dataSetModel);
         Object columnNames[] = {VERTEX, VERTICES};
         return createTable(dataSetModel.getTitle(), rowData, columnNames);
     }
 
     @NotNull
-    private JScrollPane addDegreeToVerticesTable(DataSetModel dataSetModel) {
+    private JScrollPane addDegreeToVerticesTable(Graph dataSetModel) {
         Object[][] rowData = prepareDegreeToVerticesModel(dataSetModel);
         Object columnNames[] = {DEGREE, VERTICES};
         return createTable(dataSetModel.getTitle(), rowData, columnNames);
@@ -170,7 +170,7 @@ public class TableView extends JPanel {
         return scrollPane;
     }
 
-    private Object[][] prepareVertexToVerticesModel(DataSetModel dataSetToModel) {
+    private Object[][] prepareVertexToVerticesModel(Graph dataSetToModel) {
         Map<Vertex, Set<Vertex>> vertexToNeighbors = dataSetToModel.getVertexToNeighbors();
         Set<Vertex> vertices = vertexToNeighbors.keySet();
         Iterator<Vertex> iterator = vertices.iterator();
@@ -186,7 +186,7 @@ public class TableView extends JPanel {
         return rowData;
     }
 
-    private Object[][] prepareDegreeToVerticesModel(DataSetModel dataSetToModel) {
+    private Object[][] prepareDegreeToVerticesModel(Graph dataSetToModel) {
         // get data set model:
         Map<Vertex, Set<Vertex>> vertexToNeighbors = dataSetToModel.getVertexToNeighbors();
         Collection<Set<Vertex>> vertexDegreesValues = vertexToNeighbors.values();
@@ -219,7 +219,7 @@ public class TableView extends JPanel {
         final DemoDataCreator demoDataCreatorLocal = new DemoDataCreator();
         //create a window to display...
         JFrame jf = new JFrame("Demo Table");
-        DataSetModel dataSetToModel = demoDataCreatorLocal.getDataSetToModel();
+        Graph dataSetToModel = demoDataCreatorLocal.getDataSetToModel();
         TableView chart = new TableView(dataSetToModel);
         jf.add(chart);
 

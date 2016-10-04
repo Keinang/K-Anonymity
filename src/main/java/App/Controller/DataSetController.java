@@ -1,6 +1,6 @@
 package App.Controller;
 
-import App.Model.DataSetModel;
+import App.Model.Graph;
 import App.Utils.FileUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ public class DataSetController {
     private FileUtil fileUtils;
     private List<String> dataSetsNames = new ArrayList<>();
     private HashMap<String, String> dataSetNameToFileName = new HashMap<>();
-    private HashMap<String, DataSetModel> dataSetToModel = new HashMap<>();
+    private HashMap<String, Graph> dataSetToModel = new HashMap<>();
     private HashMap<String, Integer> dataSetToProgress = new HashMap<>();
 
     public DataSetController() {
@@ -53,7 +53,7 @@ public class DataSetController {
         String fileName = dataSetNameToFileName.get(dataSet);
         List<String> values = fileUtils.loadDataSet(fileName);
         int size = values.size();
-        DataSetModel model = new DataSetModel();
+        Graph model = new Graph();
         model.setDataSet(dataSet);
         model.setTitle("Original " + dataSet);
         for (int i = 0; i < size; i++) {
@@ -81,7 +81,7 @@ public class DataSetController {
         return dataSetToProgress.get(dataSet);
     }
 
-    public DataSetModel getDataSetToModel(String dataSet) {
+    public Graph getDataSetToModel(String dataSet) {
         return dataSetToModel.get(dataSet);
     }
 

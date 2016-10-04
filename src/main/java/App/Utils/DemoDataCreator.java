@@ -1,6 +1,6 @@
 package App.Utils;
 
-import App.Model.DataSetModel;
+import App.Model.Graph;
 
 import java.util.Random;
 
@@ -13,8 +13,8 @@ public class DemoDataCreator {
 
     private static final Random position = new Random();
 
-    public DataSetModel getDataSetToModel() {
-        DataSetModel model = new DataSetModel();
+    public Graph getDataSetToModel() {
+        Graph model = new Graph();
         for (int i = 0; i < EDGES_SIZE; i++) {
             int xIdx = position.nextInt(VERTICES_SIZE);
             int yIdx = position.nextInt(VERTICES_SIZE);

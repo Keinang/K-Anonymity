@@ -1,6 +1,6 @@
 package App.Controller;
 
-import App.Model.DataSetModel;
+import App.Model.Graph;
 import App.Model.DegreeContext;
 import App.Exceptions.NotRealizedGraphException;
 import App.Model.Vertex;
@@ -26,11 +26,11 @@ public class KDegreeAlgorithm implements IAlgorithm{
      * @return anonymized graph
      */
     @Override
-    public DataSetModel annonymize(DataSetModel originalGraph, Integer k) {
+    public Graph anonymize(Graph originalGraph, Integer k) {
         DegreeContext[] originalDegrees = getDegreeVector(originalGraph);
         DegreeContext[] annonymizeDegreeVector = degreeAnonymization(originalDegrees, k);
         createAdditionalDegreeVector(originalDegrees, annonymizeDegreeVector);
-        DataSetModel annoymizeGraph = null;
+        Graph annoymizeGraph = null;
         try {
             annoymizeGraph = supergraph(originalGraph, annonymizeDegreeVector);
             return annoymizeGraph;
@@ -39,11 +39,11 @@ public class KDegreeAlgorithm implements IAlgorithm{
 
             // add noise to original graph and trying again
             addNoise(originalGraph);
-            return annonymize(originalGraph, k);
+            return anonymize(originalGraph, k);
         }
     }
 
-    private void addNoise(DataSetModel originalGraph) {
+    private void addNoise(Graph originalGraph) {
         Set<Vertex> vertices = originalGraph.getVertices();
         List<Vertex> vertexList = new ArrayList<>(vertices);
 
@@ -62,7 +62,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
      * @param originalGraph - original model
      * @return the original vector of degrees sort desc.
      */
-    private DegreeContext[] getDegreeVector(DataSetModel originalGraph) {
+    private DegreeContext[] getDegreeVector(Graph originalGraph) {
         Map<Vertex, Set<Vertex>> vertexToNeighbors = originalGraph.getVertexToNeighbors();
         Set<Vertex> vertices = vertexToNeighbors.keySet();
         List<DegreeContext> originalDegrees = new ArrayList<>();
@@ -97,7 +97,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
 
         //System.out.println("Size: " + size);
         degreeAnonymizationRecursive(0, size, anonymizedDegrees, k);
-        return anonymizedDegrees; // they are now annonymized
+        return anonymizedDegrees; // they are now anonymized
     }
 
     private void degreeAnonymizationGroup(int from, int to, DegreeContext[] vector) {
@@ -119,12 +119,12 @@ public class KDegreeAlgorithm implements IAlgorithm{
         }
     }
 
-    private void createAdditionalDegreeVector(DegreeContext[] originalDegrees, DegreeContext[] annonymizeDegreeVector) {
-        for (int i = 0; i < annonymizeDegreeVector.length; i++) {
-            int annonymizedDegree = annonymizeDegreeVector[i].getDegree();
+    private void createAdditionalDegreeVector(DegreeContext[] originalDegrees, DegreeContext[] anonymizeDegreeVector) {
+        for (int i = 0; i < anonymizeDegreeVector.length; i++) {
+            int anonymizedDegree = anonymizeDegreeVector[i].getDegree();
             int originalDegree = originalDegrees[i].getDegree();
-            //System.out.println("annonymizedDegree:" + annonymizedDegree + ", originalDegree:" + originalDegree);
-            annonymizeDegreeVector[i].setDegree(annonymizedDegree - originalDegree);
+            //System.out.println("anonymizedDegree:" + anonymizedDegree + ", originalDegree:" + originalDegree);
+            anonymizeDegreeVector[i].setDegree(anonymizedDegree - originalDegree);
         }
     }
 
@@ -132,10 +132,10 @@ public class KDegreeAlgorithm implements IAlgorithm{
      * step 2
      *
      * @param originalGraph          - the original graph
-     * @param additionalDegreeVector - the annonymized vector left to fill the graph
-     * @return constructed graph from the annoynmized vector
+     * @param additionalDegreeVector - the anonymized vector left to fill the graph
+     * @return constructed graph from the anoynmized vector
      */
-    private DataSetModel supergraph(DataSetModel originalGraph, DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
+    private Graph supergraph(Graph originalGraph, DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
         // if the sum of additional vector is odd throw illegalGraph
         int sum = sumVector(additionalDegreeVector);
         if (!(sum % 2 == 0)) {
@@ -145,7 +145,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
         return supergraphRecusive(originalGraph, additionalDegreeVector);
     }
 
-    private DataSetModel supergraphRecusive(DataSetModel originalGraph, DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
+    private Graph supergraphRecusive(Graph originalGraph, DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
         // check if there exist a degree with minus value in additional vector and throw exception
         checkMinusDegree(additionalDegreeVector);
 
@@ -175,7 +175,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
      * @param degreeContext
      * @param additionalDegreeVector
      */
-    private void pickAndConnectEdges(DataSetModel originalGraph, DegreeContext degreeContext, DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
+    private void pickAndConnectEdges(Graph originalGraph, DegreeContext degreeContext, DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
         int degreeToAdd = degreeContext.getDegree();
         Map<Vertex, Set<Vertex>> vertexToNeighbors = originalGraph.getVertexToNeighbors();
         Set<Vertex> vertexNeighbors = vertexToNeighbors.get(degreeContext.getVertex());
@@ -238,7 +238,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
         BasicConfigurator.configure();
 
         DemoDataCreator demoDataCreator = new DemoDataCreator();
-        DataSetModel originalGraph = demoDataCreator.getDataSetToModel();
+        Graph originalGraph = demoDataCreator.getDataSetToModel();
         KDegreeAlgorithm kDegreeAlgo = new KDegreeAlgorithm();
 
         int k = 5;
@@ -247,14 +247,14 @@ public class KDegreeAlgorithm implements IAlgorithm{
         System.out.println(Arrays.toString(originalDegreeVector));
 
         /*
-        DegreeContext[] annonymizeDegreeVector = kDegreeAlgo.degreeAnonymization(originalDegreeVector, k);
-        System.out.println(Arrays.toString(annonymizeDegreeVector));
+        DegreeContext[] anonymizeDegreeVector = kDegreeAlgo.degreeAnonymization(originalDegreeVector, k);
+        System.out.println(Arrays.toString(anonymizeDegreeVector));
 
         kDegreeAlgo.createAdditionalDegreeVector(originalDegreeVector, annonymizeDegreeVector);
-        System.out.println(Arrays.toString(annonymizeDegreeVector));*/
-        DataSetModel annonymize = kDegreeAlgo.annonymize(originalGraph, k);
+        System.out.println(Arrays.toString(anonymizeDegreeVector));*/
+        Graph anonymize = kDegreeAlgo.anonymize(originalGraph, k);
 
-        DegreeContext[] anonymizedDegreeVector = kDegreeAlgo.getDegreeVector(annonymize);
+        DegreeContext[] anonymizedDegreeVector = kDegreeAlgo.getDegreeVector(anonymize);
         System.out.println(Arrays.toString(anonymizedDegreeVector));
     }
 }

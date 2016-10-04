@@ -12,7 +12,7 @@ public class NeighborhoodContext implements Comparable<NeighborhoodContext> {
     private Vertex vertex;
     private Set<Vertex> neighborsVertices;
     private List<Edge> neighborsEdges;
-    private boolean isAnnonymized;
+    private boolean isAnonymized;
 
     public Vertex getVertex() {
         return vertex;
@@ -38,12 +38,12 @@ public class NeighborhoodContext implements Comparable<NeighborhoodContext> {
         this.neighborsEdges = neighborsEdges;
     }
 
-    public boolean isAnnonymized() {
-        return isAnnonymized;
+    public boolean isAnonymized() {
+        return isAnonymized;
     }
 
-    public void setAnnonymized(boolean annonymized) {
-        isAnnonymized = annonymized;
+    public void setAnonymized(boolean anonymized) {
+        isAnonymized = anonymized;
     }
 
     @Override
