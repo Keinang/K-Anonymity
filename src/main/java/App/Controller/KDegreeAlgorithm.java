@@ -4,6 +4,7 @@ import App.Model.Graph;
 import App.Model.DegreeContext;
 import App.Exceptions.NotRealizedGraphException;
 import App.Model.Vertex;
+import App.Utils.DegreeUtil;
 import App.Utils.DemoDataCreator;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -28,12 +29,12 @@ public class KDegreeAlgorithm implements IAlgorithm{
     @Override
     public Graph anonymize(Graph originalGraph, Integer k) {
         DegreeContext[] originalDegrees = getDegreeVector(originalGraph);
-        DegreeContext[] annonymizeDegreeVector = degreeAnonymization(originalDegrees, k);
-        createAdditionalDegreeVector(originalDegrees, annonymizeDegreeVector);
-        Graph annoymizeGraph = null;
+        DegreeContext[] anonymizeDegreeVector = degreeAnonymization(originalDegrees, k);
+        createAdditionalDegreeVector(originalDegrees, anonymizeDegreeVector);
+        Graph anoymizeGraph = null;
         try {
-            annoymizeGraph = supergraph(originalGraph, annonymizeDegreeVector);
-            return annoymizeGraph;
+            anoymizeGraph = supergraph(originalGraph, anonymizeDegreeVector);
+            return anoymizeGraph;
         } catch (NotRealizedGraphException e) {
             //logger.debug(e.getMessage());
 
@@ -63,28 +64,17 @@ public class KDegreeAlgorithm implements IAlgorithm{
      * @return the original vector of degrees sort desc.
      */
     private DegreeContext[] getDegreeVector(Graph originalGraph) {
-        Map<Vertex, Set<Vertex>> vertexToNeighbors = originalGraph.getVertexToNeighbors();
-        Set<Vertex> vertices = vertexToNeighbors.keySet();
-        List<DegreeContext> originalDegrees = new ArrayList<>();
-
-        Iterator<Vertex> vertexIterator = vertices.iterator();
-        while (vertexIterator.hasNext()) {
-            Vertex vertex = vertexIterator.next();
-            Set<Vertex> neighbors = vertexToNeighbors.get(vertex);
-            DegreeContext vertexDegreeContext = new DegreeContext(vertex, neighbors.size());
-            originalDegrees.add(vertexDegreeContext);
-        }
-        DegreeContext[] result = new DegreeContext[vertices.size()];
-        Collections.sort(originalDegrees);
-        return originalDegrees.toArray(result);
+        DegreeContext[] result = new DegreeContext[originalGraph.getVertices().size()];
+        List<DegreeContext> degreeContexts = DegreeUtil.sortByDegree(originalGraph);
+        return degreeContexts.toArray(result);
     }
 
     /**
      * step 1
      *
      * @param originalDegrees - vector of degrees sorted desc.
-     * @param k               - the annonymization level
-     * @return the annonymized vector
+     * @param k               - the anonymization level
+     * @return the anonymized vector
      */
     private DegreeContext[] degreeAnonymization(DegreeContext[] originalDegrees, Integer k) {
         DegreeContext[] anonymizedDegrees = new DegreeContext[originalDegrees.length];
@@ -238,7 +228,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
         BasicConfigurator.configure();
 
         DemoDataCreator demoDataCreator = new DemoDataCreator();
-        Graph originalGraph = demoDataCreator.getDataSetToModel();
+        Graph originalGraph = demoDataCreator.generateGraph();
         KDegreeAlgorithm kDegreeAlgo = new KDegreeAlgorithm();
 
         int k = 5;
@@ -250,7 +240,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
         DegreeContext[] anonymizeDegreeVector = kDegreeAlgo.degreeAnonymization(originalDegreeVector, k);
         System.out.println(Arrays.toString(anonymizeDegreeVector));
 
-        kDegreeAlgo.createAdditionalDegreeVector(originalDegreeVector, annonymizeDegreeVector);
+        kDegreeAlgo.createAdditionalDegreeVector(originalDegreeVector, anonymizeDegreeVector);
         System.out.println(Arrays.toString(anonymizeDegreeVector));*/
         Graph anonymize = kDegreeAlgo.anonymize(originalGraph, k);
 

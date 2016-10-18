@@ -3,16 +3,34 @@ package App.Model;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by Keinan.Gilad on 10/3/2016.
  */
 public class NeighborhoodContext implements Comparable<NeighborhoodContext> {
     private Vertex vertex;
-    private Set<Vertex> neighborsVertices;
-    private List<Edge> neighborsEdges;
     private boolean isAnonymized;
+    private Double cost;
+    private int vertices;
+    private int edges;
+
+    public int getVertices() {
+        return vertices;
+    }
+
+    public void setVertices(int vertices) {
+        this.vertices = vertices;
+    }
+
+    public int getEdges() {
+        return edges;
+    }
+
+    public void setEdges(int edges) {
+        this.edges = edges;
+    }
+
+    private List<ComponentCode> neighborhoodComponentCode; // NCC for each component
 
     public Vertex getVertex() {
         return vertex;
@@ -20,22 +38,6 @@ public class NeighborhoodContext implements Comparable<NeighborhoodContext> {
 
     public void setVertex(Vertex vertex) {
         this.vertex = vertex;
-    }
-
-    public Set<Vertex> getNeighborsVertices() {
-        return neighborsVertices;
-    }
-
-    public void setNeighborsVertices(Set<Vertex> neighborsVertices) {
-        this.neighborsVertices = neighborsVertices;
-    }
-
-    public List<Edge> getNeighborsEdges() {
-        return neighborsEdges;
-    }
-
-    public void setNeighborsEdges(List<Edge> neighborsEdges) {
-        this.neighborsEdges = neighborsEdges;
     }
 
     public boolean isAnonymized() {
@@ -49,16 +51,10 @@ public class NeighborhoodContext implements Comparable<NeighborhoodContext> {
     @Override
     public int compareTo(@NotNull NeighborhoodContext o) {
         try {
-            int otherVerticesSize = o.getNeighborsVertices().size();
-            int thisVerticesSize = neighborsVertices.size();
-
-            if (otherVerticesSize == thisVerticesSize) {
-                int otherEdgesSize = o.getNeighborsEdges().size();
-                int thisEdgesSize = this.neighborsEdges.size();
-
-                return new Integer(otherEdgesSize).compareTo(Integer.valueOf(thisEdgesSize));
+            if (vertices == o.vertices) {
+                return new Integer(o.edges).compareTo(Integer.valueOf(this.edges));
             } else {
-                return new Integer(otherVerticesSize).compareTo(Integer.valueOf(thisVerticesSize));
+                return new Integer(o.vertices).compareTo(Integer.valueOf(this.vertices));
             }
 
         } catch (Exception e) {
@@ -66,8 +62,29 @@ public class NeighborhoodContext implements Comparable<NeighborhoodContext> {
         }
     }
 
+    public Double getCost() {
+        return cost;
+    }
+
+    public void setCost(Double cost) {
+        this.cost = cost;
+    }
+
+    public List<ComponentCode> getNeighborhoodComponentCode() {
+        return neighborhoodComponentCode;
+    }
+
+    public void setNeighborhoodComponentCode(List<ComponentCode> neighborhoodComponentCode) {
+        this.neighborhoodComponentCode = neighborhoodComponentCode;
+    }
+
     @Override
     public String toString() {
-        return String.format("v=%s, V(v)=%s, E(v)=%s\n", vertex, neighborsVertices.size(), neighborsEdges.size());
+        return String.format("v=%s, V(v)=%s, E(v)=%s\n", vertex, this.vertices, this.edges);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.getVertex().equals(((NeighborhoodContext) obj).getVertex());
     }
 }
