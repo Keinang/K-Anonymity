@@ -4,7 +4,7 @@ import App.Controller.AlgorithmController;
 import App.Controller.DataSetController;
 import App.Model.AlgoType;
 import App.Model.Graph;
-import App.UITasks.DataSetLoaderTask;
+import App.Common.UITasks.DataSetLoaderTask;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

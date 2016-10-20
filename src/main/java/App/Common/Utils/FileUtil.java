@@ -1,4 +1,4 @@
-package App.Utils;
+package App.Common.Utils;
 
 import org.apache.log4j.Logger;
 

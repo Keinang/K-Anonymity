@@ -1,11 +1,12 @@
 package App.Controller;
 
+import App.Common.IAlgorithm;
 import App.Model.Graph;
 import App.Model.DegreeContext;
-import App.Exceptions.NotRealizedGraphException;
+import App.Common.Exceptions.NotRealizedGraphException;
 import App.Model.Vertex;
-import App.Utils.DegreeUtil;
-import App.Utils.DemoDataCreator;
+import App.Common.Utils.DegreeUtil;
+import App.Common.Utils.DemoDataCreator;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
@@ -14,8 +15,8 @@ import java.util.*;
 /**
  * Created by Keinan.Gilad on 9/23/2016.
  */
-public class KDegreeAlgorithm implements IAlgorithm{
-    private static Logger logger = Logger.getLogger(KDegreeAlgorithm.class);
+public class KDegree implements IAlgorithm {
+    private static Logger logger = Logger.getLogger(KDegree.class);
     public static final int NOISE_ADDITION = 10;
     private static final Random position = new Random();
 
@@ -228,7 +229,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
         BasicConfigurator.configure();
 
         Graph originalGraph = DemoDataCreator.generateRandomGraph();
-        KDegreeAlgorithm kDegreeAlgo = new KDegreeAlgorithm();
+        KDegree kDegreeAlgo = new KDegree();
 
         int k = 5;
 

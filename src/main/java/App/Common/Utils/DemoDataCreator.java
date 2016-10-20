@@ -1,4 +1,4 @@
-package App.Utils;
+package App.Common.Utils;
 
 import App.Model.Graph;
 import App.Model.Vertex;

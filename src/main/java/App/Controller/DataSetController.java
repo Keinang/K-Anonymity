@@ -1,7 +1,7 @@
 package App.Controller;
 
 import App.Model.Graph;
-import App.Utils.FileUtil;
+import App.Common.Utils.FileUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -1,4 +1,4 @@
-package App.UITasks;
+package App.Common.UITasks;
 
 import App.Controller.DataSetController;
 import org.apache.log4j.Logger;

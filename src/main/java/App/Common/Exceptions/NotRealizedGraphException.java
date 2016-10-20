@@ -1,4 +1,4 @@
-package App.Exceptions;
+package App.Common.Exceptions;
 
 /**
  * Created by Keinan.Gilad on 9/23/2016.

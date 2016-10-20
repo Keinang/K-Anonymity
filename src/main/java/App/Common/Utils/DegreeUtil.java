@@ -1,4 +1,4 @@
-package App.Utils;
+package App.Common.Utils;
 
 import App.Model.DegreeContext;
 import App.Model.Graph;

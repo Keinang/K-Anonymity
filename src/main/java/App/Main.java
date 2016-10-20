@@ -1,4 +1,4 @@
-package App.Main;
+package App;
 
 import App.View.AppFrame;
 import org.apache.log4j.BasicConfigurator;

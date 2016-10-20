@@ -3,7 +3,7 @@ package App.lib.jNauty;
 import App.Model.Edge;
 import App.Model.Graph;
 import App.Model.Vertex;
-import App.Utils.DegreeUtil;
+import App.Common.Utils.DegreeUtil;
 
 import java.util.List;
 import java.util.Map;

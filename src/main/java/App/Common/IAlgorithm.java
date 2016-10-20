@@ -1,4 +1,4 @@
-package App.Controller;
+package App.Common;
 
 import App.Model.Graph;
 

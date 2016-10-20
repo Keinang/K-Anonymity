@@ -1,6 +1,6 @@
 package App.lib.jNauty;
 
-import App.Utils.DemoDataCreator;
+import App.Common.Utils.DemoDataCreator;
 
 import java.util.List;
 

@@ -2,7 +2,7 @@ package App.View;
 
 import App.Model.Graph;
 import App.Model.Vertex;
-import App.Utils.DemoDataCreator;
+import App.Common.Utils.DemoDataCreator;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
