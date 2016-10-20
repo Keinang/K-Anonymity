@@ -1,10 +1,7 @@
 package App.Model;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Keinan.Gilad on 9/18/2016.
@@ -22,7 +19,7 @@ public class Graph implements Serializable {
 
     public Graph() {
         edges = new HashSet<>();
-        vertices = new HashSet<>();
+        vertices = new LinkedHashSet<>();
         vertexToNeighbors = new HashMap<>();
     }
 

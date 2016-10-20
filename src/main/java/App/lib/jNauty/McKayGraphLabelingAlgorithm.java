@@ -1,9 +1,9 @@
 package App.lib.jNauty;
 
+import App.Common.Utils.DegreeUtil;
 import App.Model.Edge;
 import App.Model.Graph;
 import App.Model.Vertex;
-import App.Common.Utils.DegreeUtil;
 import javafx.util.Pair;
 import org.springframework.util.CollectionUtils;
 
@@ -16,30 +16,23 @@ import java.util.*;
  * @author xx
  */
 public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
-    private Graph graph;
-    private BinaryRepresentation<V, E> binaryRepresenatation;
-
-
-    public McKayGraphLabelingAlgorithm(Graph graph) {
-        this.graph = graph;
+    public List<Permutation> findAutomorphisms(Graph graph) {
+        Map<Vertex, Set<Vertex>> vertexToNeighbors = graph.getVertexToNeighbors();
+        OrderedPartition<Vertex> pi = getVertexOrderedPartition(graph);
+        OrderedPartition<Vertex> refined = refinementProcedure(pi, vertexToNeighbors);
+        SearchTree<Vertex> tree = createSearchTree(refined, vertexToNeighbors);
+        List<SearchTreeNode<Vertex>> terminalNodes = tree.getTerminalNodes();
+        return findAutomorphismsInner(terminalNodes, graph);
     }
 
-    public List<Permutation> findAutomorphisms() {
+    private OrderedPartition<Vertex> getVertexOrderedPartition(Graph graph) {
         List<Vertex> vertices = CollectionUtils.arrayToList(graph.getVertices().toArray());
         List<List<Vertex>> allVertices = new ArrayList<List<Vertex>>();
         allVertices.add(vertices);
-        OrderedPartition<Vertex> pi = new OrderedPartition<Vertex>(allVertices);
-        binaryRepresenatation = new BinaryRepresentation<V, E>(graph);
-        OrderedPartition<Vertex> refined = refinementProcedure(pi);
-
-        SearchTree<Vertex> tree = createSearchTree(refined);
-        List<SearchTreeNode<Vertex>> terminalNodes = tree.getTerminalNodes();
-
-        //canonicalIsomorphism(terminalNodes);
-        return findAutomorphisms(terminalNodes);
+        return new OrderedPartition<Vertex>(allVertices);
     }
 
-    private OrderedPartition<Vertex> refinementProcedure(OrderedPartition<Vertex> pi) {
+    private OrderedPartition<Vertex> refinementProcedure(OrderedPartition<Vertex> pi, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
         OrderedPartition<Vertex> tau = new OrderedPartition<Vertex>(pi.getPartition());
         List<Pair<List<Vertex>, List<Vertex>>> B = new ArrayList<Pair<List<Vertex>, List<Vertex>>>();
         Map<Integer, List<Vertex>> degreesMap = new HashMap<Integer, List<Vertex>>();
@@ -49,9 +42,9 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
             for (List<Vertex> Vi : tau.getPartition()) {
                 for (List<Vertex> Vj : tau.getPartition()) {
                     //check if Vj shatters Vi
-                    int deg = deg(Vi.get(0), Vj);
+                    int deg = deg(Vi.get(0), Vj, vertexToNeighbors);
                     for (int i = 1; i < Vi.size(); i++) {
-                        if (deg(Vi.get(i), Vj) != deg) {
+                        if (deg(Vi.get(i), Vj, vertexToNeighbors) != deg) {
                             B.add(new Pair<List<Vertex>, List<Vertex>>(Vi, Vj));
                             break;
                         }
@@ -65,7 +58,7 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
             //System.out.println("B: " + B);
 
             //now find the minimum element
-            Pair<List<Vertex>, List<Vertex>> minimalPair = findMinimal(B);
+            Pair<List<Vertex>, List<Vertex>> minimalPair = findMinimal(B, vertexToNeighbors);
 
             //System.out.println("Minimal pair is " + minimalPair );
 
@@ -76,7 +69,7 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
 
             List<Integer> degrees = new ArrayList<Integer>();
             for (Vertex v : Vi) {
-                Integer deg = deg(v, Vj);
+                Integer deg = deg(v, Vj, vertexToNeighbors);
                 List<Vertex> verticesWithDegree = degreesMap.get(deg);
                 if (verticesWithDegree == null) {
                     verticesWithDegree = new ArrayList<Vertex>();
@@ -105,14 +98,14 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
      * For lexicographic total order
      * (a,b) <= (c,d) if a<c or a=c and b<=d
      */
-    private Pair<List<Vertex>, List<Vertex>> findMinimal(List<Pair<List<Vertex>, List<Vertex>>> B) {
+    private Pair<List<Vertex>, List<Vertex>> findMinimal(List<Pair<List<Vertex>, List<Vertex>>> B, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
         Pair<List<Vertex>, List<Vertex>> minimalPair = null;
         String minimalBinary1 = null;
         String minimalBinary2 = null;
 
         for (Pair<List<Vertex>, List<Vertex>> separationPair : B) {
 
-            String binary1 = binaryRepresenatation.binaryRepresenatation(separationPair.getKey());
+            String binary1 = BinaryRepresentation.binaryRepresenatation(separationPair.getKey(), vertexToNeighbors);
 
             if (minimalPair == null) {
                 minimalPair = separationPair;
@@ -127,9 +120,9 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
                     minimalBinary2 = null;
                 } else if (binary1.compareTo(minimalBinary1) == 0) {
                     if (minimalBinary2 == null)
-                        minimalBinary2 = binaryRepresenatation.binaryRepresenatation(minimalPair.getValue());
+                        minimalBinary2 = BinaryRepresentation.binaryRepresenatation(minimalPair.getValue(), vertexToNeighbors);
 
-                    String binary2 = binaryRepresenatation.binaryRepresenatation(separationPair.getValue());
+                    String binary2 = BinaryRepresentation.binaryRepresenatation(separationPair.getValue(), vertexToNeighbors);
                     if (binary2.compareTo(minimalBinary2) <= 0) {
                         minimalPair = separationPair;
                         minimalBinary1 = binary1;
@@ -144,15 +137,15 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
         return minimalPair;
     }
 
-    private SearchTree<Vertex> createSearchTree(OrderedPartition<Vertex> rootPartition) {
+    private SearchTree<Vertex> createSearchTree(OrderedPartition<Vertex> rootPartition, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
         //System.out.println("Root " + rootPartition);
         SearchTree<Vertex> tree = new SearchTree<Vertex>(rootPartition);
         SearchTreeNode<Vertex> root = tree.getRoot();
-        createSearchTree(root);
+        createSearchTree(root, vertexToNeighbors);
         return tree;
     }
 
-    private void createSearchTree(SearchTreeNode<Vertex> currentNode) {
+    private void createSearchTree(SearchTreeNode<Vertex> currentNode, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
         //split tree note, create children, process children
         OrderedPartition<Vertex> currentPartition = currentNode.getNodePartition();
         List<Vertex> firstNontrivialrPart = currentPartition.getFirstNontrivialPart();
@@ -162,12 +155,12 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
         for (Vertex u : firstNontrivialrPart) {
             //System.out.println("Splitting by " + u);
             OrderedPartition<Vertex> partition = splitPartition(u, currentPartition);
-            partition = refinementProcedure(partition);
+            partition = refinementProcedure(partition, vertexToNeighbors);
             //System.out.println(partition);
             new SearchTreeNode<Vertex>(partition, u, currentNode);
         }
         for (SearchTreeNode<Vertex> node : currentNode.getChildren()) {
-            createSearchTree(node);
+            createSearchTree(node, vertexToNeighbors);
         }
     }
 
@@ -192,39 +185,18 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
             ViPart.addAll(Vi);
             ViPart.remove(u);
             piPrim.addPart(ViPart);
-
         }
 
         return piPrim;
     }
 
-
-    @SuppressWarnings("unused")
-    private OrderedPartition<Vertex> canonicalIsomorphism(List<SearchTreeNode<Vertex>> terminalNodes) {
-        OrderedPartition<Vertex> maxPartition = null;
-        String maxBinary = null;
-        for (SearchTreeNode<Vertex> node : terminalNodes) {
-            OrderedPartition<Vertex> partition = node.getNodePartition();
-            String binary = binaryRepresenatation.binaryRepresenatation(partition.getVerticesInOrder());
-            if (maxBinary != null)
-                System.out.println(binary.compareTo(maxBinary));
-
-            if (maxBinary == null || binary.compareTo(maxBinary) == 1) {
-                maxPartition = partition;
-                maxBinary = binary;
-            }
-
-        }
-        return maxPartition;
-    }
-
-    private List<Permutation> findAutomorphisms(List<SearchTreeNode<Vertex>> terminalNodes) {
+    private List<Permutation> findAutomorphismsInner(List<SearchTreeNode<Vertex>> terminalNodes, Graph graph) {
         List<Permutation> ret = new ArrayList<Permutation>();
 
         //calculate permutations
         List<Permutation> allPermutations = new ArrayList<Permutation>();
         for (SearchTreeNode<Vertex> node : terminalNodes) {
-            Permutation p = permutation(node.getNodePartition());
+            Permutation p = permutation(node.getNodePartition(), graph.getVertices());
             allPermutations.add(p);
         }
 
@@ -238,7 +210,7 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
                 Permutation p = p1.mul(inverse);
 
                 if (!ret.contains(p)) {
-                    if (checkAutomorphism(p)) {
+                    if (checkAutomorphism(p, graph)) {
                         ret.add(p);
                     }
                 }
@@ -246,14 +218,13 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
         return ret;
     }
 
-    private boolean checkAutomorphism(Permutation permutation) {
-        Map<Vertex, Set<Vertex>> vertexToNeighbors = graph.getVertexToNeighbors();
+    private boolean checkAutomorphism(Permutation permutation, Graph graph) {
         for (Edge e : graph.getEdges()) {
             Vertex v0 = e.getV0();
             Vertex v1 = e.getV1();
 
-            Integer v0Index = DegreeUtil.indexOf(v0,graph.getVertices());
-            Integer v1Index = DegreeUtil.indexOf(v1,graph.getVertices());
+            Integer v0Index = DegreeUtil.indexOf(v0, graph.getVertices());
+            Integer v1Index = DegreeUtil.indexOf(v1, graph.getVertices());
 
             Integer mappedV0Index = permutation.getPermutation().get(v0Index);
             Integer mappedV1Index = permutation.getPermutation().get(v1Index);
@@ -261,33 +232,33 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
             Vertex v0Mapped = DegreeUtil.getVertexInIndex(mappedV0Index, graph.getVertices());
             Vertex v1Mapped = DegreeUtil.getVertexInIndex(mappedV1Index, graph.getVertices());
 
-            if (!DegreeUtil.isEdgeBetween(v0Mapped, v1Mapped, vertexToNeighbors)) {
+            if (!DegreeUtil.isEdgeBetween(v0Mapped, v1Mapped, graph.getVertexToNeighbors())) {
                 return false;
             }
         }
         return true;
     }
 
-    private Permutation permutation(OrderedPartition<Vertex> discretePartition) {
+    private Permutation permutation(OrderedPartition<Vertex> discretePartition, Set<Vertex> vertices) {
         Map<Integer, Integer> permutation = new HashMap<Integer, Integer>();
         for (int i = 0; i < discretePartition.getPartition().size(); i++) {
             List<Vertex> part = discretePartition.getPartition().get(i);
             Vertex v = part.get(0); //the only one
-            Integer vertexIndex = DegreeUtil.indexOf(v,graph.getVertices());
+            Integer vertexIndex = DegreeUtil.indexOf(v, vertices);
             permutation.put(vertexIndex, i);
         }
         return new Permutation(permutation);
     }
 
 
-    private int deg(Vertex v, List<Vertex> Vj) {
+    private int deg(Vertex v, List<Vertex> Vj, Map<Vertex, Set<Vertex>> vertexToNeighborsm) {
         int deg = 0;
-        Set<Vertex> vertices = graph.getVertexToNeighbors().get(v);
+        Set<Vertex> vertices = vertexToNeighborsm.get(v);
         for (Vertex test : vertices) {
-            if (Vj.contains(test))
+            if (Vj.contains(test)) {
                 deg++;
+            }
         }
         return deg;
     }
-
 }

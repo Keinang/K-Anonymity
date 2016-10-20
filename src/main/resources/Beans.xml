@@ -12,5 +12,6 @@
     <bean id="kdegree" class="App.Controller.KDegree"/>
     <bean id="ksymmetry" class="App.Controller.KSymmetry"/>
     <bean id="algorithmController" class="App.Controller.AlgorithmController"/>
+    <bean id="jNauty" class="App.lib.jNauty.McKayGraphLabelingAlgorithm"/>
 
 </beans>

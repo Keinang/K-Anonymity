@@ -29,16 +29,23 @@ public class KDegree implements IAlgorithm {
      */
     @Override
     public Graph anonymize(Graph originalGraph, Integer k) {
+        // 1. get vector of degrees descending
         DegreeContext[] originalDegrees = getDegreeVector(originalGraph);
+        // 2. anonymize the degrees
         DegreeContext[] anonymizeDegreeVector = degreeAnonymization(originalDegrees, k);
+        // 3. add additional edges according to the anonymize vector
         createAdditionalDegreeVector(originalDegrees, anonymizeDegreeVector);
+
         Graph anoymizeGraph = null;
         try {
+            // 4. create sub-graph from the degrees vector
             anoymizeGraph = supergraph(originalGraph, anonymizeDegreeVector);
+            // 5. return the anonymize graph
             return anoymizeGraph;
         } catch (NotRealizedGraphException e) {
             //logger.debug(e.getMessage());
 
+            // not realized -> repeat with noise.
             // add noise to original graph and trying again
             addNoise(originalGraph);
             return anonymize(originalGraph, k);

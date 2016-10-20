@@ -10,13 +10,14 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) {
-        McKayGraphLabelingAlgorithm algo = new McKayGraphLabelingAlgorithm(DemoDataCreator.generateGraphSymmetry());
-        List<Permutation> automorphisms = algo.findAutomorphisms();
+        McKayGraphLabelingAlgorithm algo = new McKayGraphLabelingAlgorithm();
+        List<Permutation> automorphisms = algo.findAutomorphisms(DemoDataCreator.generateGraphSymmetry());
 
         // take the last permutation
         Permutation p = automorphisms.get(automorphisms.size() - 1);
 
         // print orbits
+        System.out.println("orbits 0-7:");
         System.out.println(p.orbit(0));
         System.out.println(p.orbit(1));
         System.out.println(p.orbit(2));
@@ -25,5 +26,8 @@ public class Test {
         System.out.println(p.orbit(5));
         System.out.println(p.orbit(6));
         System.out.println(p.orbit(7));
+
+        System.out.println("cyclicRepresenatation:");
+        System.out.println(p.cyclicRepresenatation());
     }
 }

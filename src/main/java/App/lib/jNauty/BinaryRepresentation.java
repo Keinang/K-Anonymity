@@ -11,15 +11,8 @@ import java.util.Set;
 
 public class BinaryRepresentation<V extends Vertex, E extends Edge> {
 
-    private Graph graph;
-
-    public BinaryRepresentation(Graph graph) {
-        this.graph = graph;
-    }
-
-    public String binaryRepresenatation(List<Vertex> verticeList) {
+    public static String binaryRepresenatation(List<Vertex> verticeList, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
         String representation = "";
-        Map<Vertex, Set<Vertex>> vertexToNeighbors = graph.getVertexToNeighbors();
         for (int i = 0; i < verticeList.size(); i++) {
             Vertex v1 = verticeList.get(i);
             for (int j = i + 1; j < verticeList.size(); j++) {
