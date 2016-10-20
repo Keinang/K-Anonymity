@@ -1,6 +1,7 @@
 package App.Utils;
 
 import App.Model.Graph;
+import App.Model.Vertex;
 
 import java.util.Random;
 
@@ -13,7 +14,7 @@ public class DemoDataCreator {
 
     private static final Random position = new Random();
 
-    public Graph generateGraph() {
+    public static Graph generateRandomGraph() {
         Graph model = new Graph();
         for (int i = 0; i < EDGES_SIZE; i++) {
             int xIdx = position.nextInt(VERTICES_SIZE);
@@ -24,46 +25,26 @@ public class DemoDataCreator {
         return model;
     }
 
-    public Graph generateGraphT2() {
+    public static Graph generateGraphSymmetry() {
         Graph model = new Graph();
-        model.addRow(new String[]{"0", "1"});
-        model.setTitle("T2");
-        return model;
-    }
+        Vertex v1 = new Vertex("1");
+        Vertex v2 = new Vertex("2");
+        Vertex v3 = new Vertex("3");
+        Vertex v4 = new Vertex("4");
+        Vertex v5 = new Vertex("5");
+        Vertex v6 = new Vertex("6");
+        Vertex v7 = new Vertex("7");
+        Vertex v8 = new Vertex("8");
 
-    public Graph generateGraphT3() {
-        Graph model = new Graph();
-        model.addRow(new String[]{"0", "1"});
-        model.addRow(new String[]{"0", "2"});
-        model.addRow(new String[]{"1", "2"});
-
-        model.setTitle("T3");
-        return model;
-    }
-
-    public Graph generateGraphT4() {
-        Graph model = new Graph();
-        model.addRow(new String[]{"0", "1"});
-        model.addRow(new String[]{"0", "2"});
-        model.addRow(new String[]{"0", "3"});
-        model.addRow(new String[]{"1", "2"});
-        model.addRow(new String[]{"1", "3"});
-        model.addRow(new String[]{"2", "3"});
-
-        model.setTitle("T4");
-        return model;
-    }
-
-    public Graph generateGraphGSpan2b() {
-        Graph model = new Graph();
-        model.addRow(new String[]{"0", "1"});
-        model.addRow(new String[]{"1", "2"});
-        model.addRow(new String[]{"2", "3"});
-        model.addRow(new String[]{"1", "4"});
-        model.addRow(new String[]{"2", "0"});
-        model.addRow(new String[]{"1", "3"});
-
-        model.setTitle("T4");
+        model.addRow(new String[]{String.valueOf(v1), String.valueOf(v3)});
+        model.addRow(new String[]{String.valueOf(v2), String.valueOf(v3)});
+        model.addRow(new String[]{String.valueOf(v3), String.valueOf(v4)});
+        model.addRow(new String[]{String.valueOf(v3), String.valueOf(v5)});
+        model.addRow(new String[]{String.valueOf(v4), String.valueOf(v5)});
+        model.addRow(new String[]{String.valueOf(v4), String.valueOf(v6)});
+        model.addRow(new String[]{String.valueOf(v5), String.valueOf(v7)});
+        model.addRow(new String[]{String.valueOf(v6), String.valueOf(v8)});
+        model.addRow(new String[]{String.valueOf(v7), String.valueOf(v8)});
         return model;
     }
 }

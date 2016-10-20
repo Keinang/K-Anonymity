@@ -1,8 +1,7 @@
 package App.View;
 
+import App.Controller.AlgorithmController;
 import App.Controller.DataSetController;
-import App.Controller.KDegreeAlgorithm;
-import App.Controller.KNeighborhoodAlgorithm;
 import App.Model.AlgoType;
 import App.Model.Graph;
 import App.UITasks.DataSetLoaderTask;
@@ -40,10 +39,7 @@ public class AppFrame extends JFrame {
     private DataSetController dataSetController;
 
     @Autowired
-    private KDegreeAlgorithm kDegreeAlgorithm;
-
-    @Autowired
-    private KNeighborhoodAlgorithm kNeighborhoodAlgorithm;
+    private AlgorithmController algorithmController;
 
     private List<String> dataSetsNames;
     private ButtonGroup buttonGroupAlgorithms;
@@ -178,17 +174,9 @@ public class AppFrame extends JFrame {
                 Graph originalClone = (Graph) SerializationUtils.clone(dataSetToModel);
                 logger.debug(String.format("Start Algorithm %s on dataSet %s with K eqaul to %s", algorithm, dataSet, k));
                 long before = System.currentTimeMillis();
-                Graph anonymizeData = null;
 
-                if (AlgoType.KDegree.toString().equals(algorithm)) {
-                    anonymizeData = kDegreeAlgorithm.anonymize(originalClone, Integer.valueOf(k));
+                Graph anonymizeData = algorithmController.anonymize(algorithm, originalClone, Integer.valueOf(k));
 
-                } else if (AlgoType.KNeighborhood.toString().equals(algorithm)) {
-                    anonymizeData = kNeighborhoodAlgorithm.anonymize(originalClone, Integer.valueOf(k));
-
-                } else {
-                    logger.debug("Not valid execution.");
-                }
                 if (anonymizeData != null){
                     addViewToPanel(anonymizeData, before, algorithm, k);
                 }

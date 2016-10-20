@@ -227,8 +227,7 @@ public class KDegreeAlgorithm implements IAlgorithm{
     public static void main(String[] agrs) {
         BasicConfigurator.configure();
 
-        DemoDataCreator demoDataCreator = new DemoDataCreator();
-        Graph originalGraph = demoDataCreator.generateGraph();
+        Graph originalGraph = DemoDataCreator.generateRandomGraph();
         KDegreeAlgorithm kDegreeAlgo = new KDegreeAlgorithm();
 
         int k = 5;

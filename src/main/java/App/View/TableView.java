@@ -219,7 +219,7 @@ public class TableView extends JPanel {
         final DemoDataCreator demoDataCreatorLocal = new DemoDataCreator();
         //create a window to display...
         JFrame jf = new JFrame("Demo Table");
-        Graph dataSetToModel = demoDataCreatorLocal.generateGraph();
+        Graph dataSetToModel = demoDataCreatorLocal.generateRandomGraph();
         TableView chart = new TableView(dataSetToModel);
         jf.add(chart);
 

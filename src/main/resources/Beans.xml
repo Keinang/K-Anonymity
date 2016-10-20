@@ -7,10 +7,9 @@
     <context:annotation-config/>
 
     <bean id="FileUtil" class="App.Utils.FileUtil"/>
-    <bean id="DemoDataCreator" class="App.Utils.DemoDataCreator"/>
     <bean id="DataSetController" class="App.Controller.DataSetController"/>
     <bean id="AppFrame" class="App.View.AppFrame"/>
     <bean id="kdegree" class="App.Controller.KDegreeAlgorithm"/>
-    <bean id="kNeighborhood" class="App.Controller.KNeighborhoodAlgorithm"/>
+    <bean id="algorithmController" class="App.Controller.AlgorithmController"/>
 
 </beans>
