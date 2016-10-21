@@ -53,15 +53,14 @@ public class KDegree implements IAlgorithm {
     }
 
     private void addNoise(Graph originalGraph) {
-        Set<Vertex> vertices = originalGraph.getVertices();
-        List<Vertex> vertexList = new ArrayList<>(vertices);
+        List<Vertex> vertices = originalGraph.getVertices();
 
         int edgeAdditions = position.nextInt(NOISE_ADDITION);
         for (int i = 0; i < edgeAdditions; i++) {
             int size = vertices.size();
             int xIdx = position.nextInt(size);
             int yIdx = position.nextInt(size);
-            originalGraph.addEdge(vertexList.get(xIdx), vertexList.get(yIdx));
+            originalGraph.addEdge(vertices.get(xIdx), vertices.get(yIdx));
         }
     }
 

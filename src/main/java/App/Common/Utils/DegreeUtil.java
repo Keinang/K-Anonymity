@@ -33,12 +33,4 @@ public class DegreeUtil {
     public static boolean isEdgeBetween(Vertex v1, Vertex v2, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
         return vertexToNeighbors.get(v1).contains(v2); //no need || vertexToNeighbors.get(v2).contains(v1);
     }
-
-    public static int indexOf(Vertex v, Set<Vertex> vertices){
-        return CollectionUtils.arrayToList(vertices.toArray()).indexOf(v);
-    }
-
-    public static Vertex getVertexInIndex(int idx, Set<Vertex> vertices){
-        return (Vertex) CollectionUtils.arrayToList(vertices.toArray()).get(idx);
-    }
 }

@@ -9,7 +9,7 @@ import java.util.*;
 public class Graph implements Serializable {
 
     private Set<Edge> edges;
-    private Set<Vertex> vertices;
+    private List<Vertex> vertices;
     private String title;
     private String dataSet;
     private Map<Vertex, Set<Vertex>> vertexToNeighbors;
@@ -19,7 +19,7 @@ public class Graph implements Serializable {
 
     public Graph() {
         edges = new HashSet<>();
-        vertices = new LinkedHashSet<>();
+        vertices = new ArrayList<>();
         vertexToNeighbors = new HashMap<>();
     }
 
@@ -27,12 +27,19 @@ public class Graph implements Serializable {
         Vertex v0 = new Vertex(valueRowSplits[0]);
         Vertex v1 = new Vertex(valueRowSplits[1]);
 
-        vertices.add(v0);
-        vertices.add(v1);
+        addVertex(v0);
+        addVertex(v1);
+
         edges.add(new Edge(v0, v1));
 
         // update degrees:
         updateNeightbors(v0, v1);
+    }
+
+    public void addVertex(Vertex v) {
+        if (!vertices.contains(v)) {
+            vertices.add(v);
+        }
     }
 
     private void updateNeightbors(Vertex v0, Vertex v1) {
@@ -51,8 +58,8 @@ public class Graph implements Serializable {
 
     public void addEdge(Vertex v0, Vertex v1) {
         edges.add(new Edge(v0, v1));
-        vertices.add(v0);
-        vertices.add(v1);
+        addVertex(v0);
+        addVertex(v1);
         updateNeightbors(v0, v1);
     }
 
@@ -80,11 +87,11 @@ public class Graph implements Serializable {
         this.edges = edges;
     }
 
-    public Set<Vertex> getVertices() {
+    public List<Vertex> getVertices() {
         return vertices;
     }
 
-    public void setVertices(Set<Vertex> vertices) {
+    public void setVertices(List<Vertex> vertices) {
         this.vertices = vertices;
     }
 

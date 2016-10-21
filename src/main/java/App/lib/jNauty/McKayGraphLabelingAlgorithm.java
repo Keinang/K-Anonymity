@@ -5,28 +5,36 @@ import App.Model.Edge;
 import App.Model.Graph;
 import App.Model.Vertex;
 import javafx.util.Pair;
-import org.springframework.util.CollectionUtils;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
 /**
  * Implementation of McKay's canonical graph labeling algorithm
  *
+ * @param <V>
  * @param <E>
- * @author xx
  */
 public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
+    private static Logger logger = Logger.getLogger(McKayGraphLabelingAlgorithm.class);
+
     public List<Permutation> findAutomorphisms(Graph graph) {
+        // get information from graph:
         Map<Vertex, Set<Vertex>> vertexToNeighbors = graph.getVertexToNeighbors();
-        OrderedPartition<Vertex> pi = getVertexOrderedPartition(graph);
+        Set<Edge> edges = graph.getEdges();
+
+        // create ordered partition
+        OrderedPartition<Vertex> pi = getVertexOrderedPartition(graph.getVertices());
+        // refinement
         OrderedPartition<Vertex> refined = refinementProcedure(pi, vertexToNeighbors);
+        // craeting search tree
         SearchTree<Vertex> tree = createSearchTree(refined, vertexToNeighbors);
         List<SearchTreeNode<Vertex>> terminalNodes = tree.getTerminalNodes();
-        return findAutomorphismsInner(terminalNodes, graph);
+        // finding automorphisms
+        return findAutomorphismsInner(terminalNodes, graph.getVertices(), vertexToNeighbors, edges);
     }
 
-    private OrderedPartition<Vertex> getVertexOrderedPartition(Graph graph) {
-        List<Vertex> vertices = CollectionUtils.arrayToList(graph.getVertices().toArray());
+    private OrderedPartition<Vertex> getVertexOrderedPartition(List<Vertex> vertices) {
         List<List<Vertex>> allVertices = new ArrayList<List<Vertex>>();
         allVertices.add(vertices);
         return new OrderedPartition<Vertex>(allVertices);
@@ -190,17 +198,18 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
         return piPrim;
     }
 
-    private List<Permutation> findAutomorphismsInner(List<SearchTreeNode<Vertex>> terminalNodes, Graph graph) {
+    private List<Permutation> findAutomorphismsInner(List<SearchTreeNode<Vertex>> terminalNodes, List<Vertex> vertices, Map<Vertex, Set<Vertex>> vertexToNeighbors, Set<Edge> edges) {
+        logger.debug("Start findAutomorphismsInner");
         List<Permutation> ret = new ArrayList<Permutation>();
 
         //calculate permutations
         List<Permutation> allPermutations = new ArrayList<Permutation>();
         for (SearchTreeNode<Vertex> node : terminalNodes) {
-            Permutation p = permutation(node.getNodePartition(), graph.getVertices());
+            Permutation p = permutation(node.getNodePartition(), vertices);
             allPermutations.add(p);
         }
 
-        for (int i = 0; i < allPermutations.size(); i++)
+        for (int i = 0; i < allPermutations.size(); i++) {
             for (int j = i; j < allPermutations.size(); j++) {
                 Permutation p1 = allPermutations.get(i);
                 Permutation p2 = allPermutations.get(j);
@@ -210,41 +219,43 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
                 Permutation p = p1.mul(inverse);
 
                 if (!ret.contains(p)) {
-                    if (checkAutomorphism(p, graph)) {
+                    if (checkAutomorphism(p, vertices, vertexToNeighbors, edges)) {
                         ret.add(p);
                     }
                 }
             }
+        }
+        logger.debug("Done findAutomorphismsInner");
         return ret;
     }
 
-    private boolean checkAutomorphism(Permutation permutation, Graph graph) {
-        for (Edge e : graph.getEdges()) {
+    private boolean checkAutomorphism(Permutation permutation, List<Vertex> vertices, Map<Vertex, Set<Vertex>> vertexToNeighbors, Set<Edge> edges) {
+        for (Edge e : edges) {
             Vertex v0 = e.getV0();
             Vertex v1 = e.getV1();
 
-            Integer v0Index = DegreeUtil.indexOf(v0, graph.getVertices());
-            Integer v1Index = DegreeUtil.indexOf(v1, graph.getVertices());
+            Integer v0Index = vertices.indexOf(v0);
+            Integer v1Index = vertices.indexOf(v1);
 
             Integer mappedV0Index = permutation.getPermutation().get(v0Index);
             Integer mappedV1Index = permutation.getPermutation().get(v1Index);
 
-            Vertex v0Mapped = DegreeUtil.getVertexInIndex(mappedV0Index, graph.getVertices());
-            Vertex v1Mapped = DegreeUtil.getVertexInIndex(mappedV1Index, graph.getVertices());
+            Vertex v0Mapped = vertices.get(mappedV0Index);
+            Vertex v1Mapped = vertices.get(mappedV1Index);
 
-            if (!DegreeUtil.isEdgeBetween(v0Mapped, v1Mapped, graph.getVertexToNeighbors())) {
+            if (!DegreeUtil.isEdgeBetween(v0Mapped, v1Mapped, vertexToNeighbors)) {
                 return false;
             }
         }
         return true;
     }
 
-    private Permutation permutation(OrderedPartition<Vertex> discretePartition, Set<Vertex> vertices) {
+    private Permutation permutation(OrderedPartition<Vertex> discretePartition, List<Vertex> vertices) {
         Map<Integer, Integer> permutation = new HashMap<Integer, Integer>();
         for (int i = 0; i < discretePartition.getPartition().size(); i++) {
             List<Vertex> part = discretePartition.getPartition().get(i);
             Vertex v = part.get(0); //the only one
-            Integer vertexIndex = DegreeUtil.indexOf(v, vertices);
+            Integer vertexIndex = vertices.indexOf(v);
             permutation.put(vertexIndex, i);
         }
         return new Permutation(permutation);
