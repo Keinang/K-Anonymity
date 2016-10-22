@@ -178,7 +178,7 @@ public class AppFrame extends JFrame {
                 Graph anonymizeData = algorithmController.anonymize(algorithm, originalClone, Integer.valueOf(k));
 
                 if (anonymizeData != null){
-                    addViewToPanel(originalData, anonymizeData, msBeforeRun, algorithm, k);
+                    addViewToPanel(originalData, anonymizeData, msBeforeRun, algorithm, k, dataSet);
                 }
 
                 // finish busy indication
@@ -193,27 +193,13 @@ public class AppFrame extends JFrame {
         executeButton.setEnabled(isEnabled);
     }
 
-    private void addViewToPanel(Graph originalData, Graph anonymizedData, long before, String algorithm, String k) {
-        if (before > 0) {
-            // diff
-            anonymizedData.setEdgeAdded(anonymizedData.getEdges().size() - originalData.getEdges().size());
-            anonymizedData.setVerticesAdded(anonymizedData.getVertices().size() - originalData.getVertices().size());
-            // time calculation
-            long after = System.currentTimeMillis();
-            anonymizedData.setDuration(after - before);
-            anonymizedData.setAnonymized(true);
-        }
-
-        if (StringUtils.isNotEmpty(algorithm) && StringUtils.isNotEmpty(k)) {
-            anonymizedData.setTitle(String.format("%s anonymized with %s", k, algorithm));
-        }
-
-        TableView table = new TableView(anonymizedData);
-        JPanel chartPanel = (JPanel) dataSetToChartPanel.get(anonymizedData.getDataSet());
+    private void addViewToPanel(Graph originalData, Graph anonymizedData, long before, String algorithm, String k, String dataset) {
+        TableView table = new TableView(anonymizedData, originalData, before, algorithm, k, dataset);
+        JPanel chartPanel = (JPanel) dataSetToChartPanel.get(dataset);
         chartPanel.add(table);
         chartPanel.revalidate();
         chartPanel.repaint();
-        logger.debug(String.format("Done adding new chart %s", anonymizedData.getDataSet()));
+        logger.debug(String.format("Done adding new chart %s", dataset));
     }
 
     private void initAlgorithms() {
@@ -339,7 +325,7 @@ public class AppFrame extends JFrame {
                     Thread thread = new Thread(new Runnable() {
                         public void run() {
                             Graph dataSetToModel = dataSetController.getDataSetToModel(dataSet);
-                            addViewToPanel(dataSetToModel, dataSetToModel, 0, null, null);
+                            addViewToPanel(dataSetToModel, dataSetToModel, 0, null, null, dataSet);
                             setBusyIndication(StringUtils.EMPTY, true);
                         }
                     });

@@ -21,7 +21,6 @@ public class DemoDataCreator {
             int yIdx = position.nextInt(VERTICES_SIZE);
             model.addRow(new String[]{String.valueOf(xIdx), String.valueOf(yIdx)});
         }
-        model.setTitle("Demo Data");
         return model;
     }
 

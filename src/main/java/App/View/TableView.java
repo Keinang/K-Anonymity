@@ -3,6 +3,8 @@ package App.View;
 import App.Common.Utils.DemoDataCreator;
 import App.Model.Graph;
 import App.Model.Vertex;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.util.Precision;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -27,9 +29,89 @@ public class TableView extends JPanel {
     public static final String TOTAL_VERTICES = "Total Vertices";
     public static final String SIZE = "Size";
     public static final String PARTITIONS = "Partitions";
+    public static final String PROBABILITY_AFTER = "Probability after";
+    public static final String PROBABILITY_BEFORE = "Probability before";
 
-    public TableView(Graph dataSetToModel) {
-        setUI(dataSetToModel);
+    // view params
+    private String title;
+    private String dataSet;
+
+    // runtime params
+    private float duration = 0;
+    private int verticesAdded;
+    private int edgeAdded;
+    private List<List<Vertex>> partitions;
+    private Map<Vertex, Double> vertexBeforeToSameDegree;
+    private Map<Vertex, Double> vertexAfterToSameDegree;
+
+    public TableView(Graph anonymizedData, Graph originalData, long before, String algorithm, String k, String dataSet) {
+        // diff
+        this.edgeAdded = anonymizedData.getEdges().size() - originalData.getEdges().size();
+        this.verticesAdded = anonymizedData.getVertices().size() - originalData.getVertices().size();
+        this.partitions = anonymizedData.getPartitions();
+        // calculate obfuscation
+        initObfuscation(anonymizedData, originalData);
+
+        // time calculation
+        long after = System.currentTimeMillis();
+        this.duration = (after - before) / 1000f;
+
+        // setting title
+        if (StringUtils.isNotEmpty(algorithm) && StringUtils.isNotEmpty(k)) {
+            this.title = String.format("%s anonymized with %s", k, algorithm);
+        }
+        this.dataSet = dataSet;
+
+        // init UI components
+        setUI(anonymizedData);
+    }
+
+    private void initObfuscation(Graph anonymizedData, Graph originalData) {
+        this.vertexBeforeToSameDegree = new HashMap<>();
+        this.vertexAfterToSameDegree = new HashMap<>();
+
+        Map<Vertex, Set<Vertex>> vertexBeforeToNeighbors = originalData.getVertexToNeighbors();
+        Map<Vertex, Set<Vertex>> vertexAfterToNeighbors = anonymizedData.getVertexToNeighbors();
+
+        // iterating to count all same degrees
+        for (Vertex vBefore : originalData.getVertices()) {
+            int vBeforeDeg = vertexBeforeToNeighbors.get(vBefore).size();
+
+            for (Vertex vAfter : anonymizedData.getVertices()) {
+                int vAfterDeg = vertexAfterToNeighbors.get(vAfter).size();
+
+                if (vBeforeDeg == vAfterDeg) {
+                    // updating both maps
+                    updateMap(vBefore, vertexBeforeToSameDegree);
+                    updateMap(vAfter, vertexAfterToSameDegree);
+                }
+            }
+        }
+
+        // iterating to calculate frequencies
+        updateTotalFrequncy(originalData.getVertices(), vertexBeforeToSameDegree);
+        updateTotalFrequncy(anonymizedData.getVertices(), vertexAfterToSameDegree);
+    }
+
+    private void updateTotalFrequncy(List<Vertex> vertices, Map<Vertex, Double> map) {
+        int total = vertices.size();
+        for (Vertex v : vertices) {
+            Double sum = map.get(v);
+            if (sum == null){
+                sum = 0.0;
+            }
+            map.put(v, Precision.round(sum / total, 2));
+        }
+    }
+
+    private void updateMap(Vertex v, Map<Vertex, Double> map) {
+        Double beforeValue = map.get(v);
+        if (beforeValue == null) {
+            beforeValue = 1.0;
+        } else {
+            beforeValue++;
+        }
+        map.put(v, beforeValue);
     }
 
     private void setUI(Graph dataSetModel) {
@@ -42,7 +124,7 @@ public class TableView extends JPanel {
         JScrollPane vertexToVerticesPane = addVertexToVerticesTable(dataSetModel);
         JScrollPane partitionsPane = new JScrollPane();
 
-        if (dataSetModel.getPartitions() != null) {
+        if (this.partitions != null) {
             partitionsPane = addParitionsTable(dataSetModel);
         }
 
@@ -75,7 +157,7 @@ public class TableView extends JPanel {
         List<Vertex> vertices = dataSetModel.getVertices();
         JLabel totalVerticesLabelValue = new JLabel(String.valueOf(vertices.size()));
 
-        Integer verticesAdded = dataSetModel.getVerticesAdded();
+        Integer verticesAdded = this.verticesAdded;
         JLabel verticesAddedLabel = new JLabel("Vertices added (%)");
         JLabel verticesAddedLabelValue = new JLabel(String.format("%s (%.2f%s)", verticesAdded, ((verticesAdded * 100.0f / (vertices.size() - verticesAdded))), "%"));
 
@@ -83,16 +165,13 @@ public class TableView extends JPanel {
         JLabel totalEdgesLabel = new JLabel(TOTAL_EDGES);
         JLabel totalEdgesLabelValue = new JLabel(String.valueOf(totalEdges));
 
-        Integer edgeAdded = dataSetModel.getEdgeAdded();
+        Integer edgeAdded = this.edgeAdded;
         JLabel edgesAddedLabel = new JLabel("Edges added (%)");
         JLabel edgesAddedLabelValue = new JLabel(String.format("%s (%.2f%s)", edgeAdded, ((edgeAdded * 100.0f / (totalEdges - edgeAdded))), "%"));
 
         // Values after running the algorithm
         JLabel durationLabel = new JLabel("Duration");
-        JLabel durationLabelValue = new JLabel(String.format("%ssec", dataSetModel.getDuration() / 1000.0f));
-
-        JLabel obfuscationLeveldLabel = new JLabel("Obfuscation Level");
-        JLabel obfuscationLeveldLabelValue = new JLabel();
+        JLabel durationLabelValue = new JLabel(String.format("%.2fsec", this.duration));
 
         // set components in layout
         layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -102,7 +181,6 @@ public class TableView extends JPanel {
                         .addComponent(totalEdgesLabel)
                         .addComponent(edgesAddedLabel)
                         .addComponent(durationLabel)
-                        .addComponent(obfuscationLeveldLabel)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(totalVerticesLabelValue)
@@ -110,7 +188,6 @@ public class TableView extends JPanel {
                         .addComponent(totalEdgesLabelValue)
                         .addComponent(edgesAddedLabelValue)
                         .addComponent(durationLabelValue)
-                        .addComponent(obfuscationLeveldLabelValue)
                 )
         );
 
@@ -135,11 +212,6 @@ public class TableView extends JPanel {
                         .addComponent(durationLabel)
                         .addComponent(durationLabelValue)
                 )
-
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(obfuscationLeveldLabel)
-                        .addComponent(obfuscationLeveldLabelValue)
-                )
         );
         return indicationPanel;
     }
@@ -147,21 +219,21 @@ public class TableView extends JPanel {
     @NotNull
     private JScrollPane addVertexToVerticesTable(Graph dataSetModel) {
         Object[][] rowData = prepareVertexToVerticesModel(dataSetModel);
-        Object columnNames[] = {VERTEX, VERTICES};
-        return createTable(dataSetModel.getTitle(), rowData, columnNames);
+        Object columnNames[] = {VERTEX, PROBABILITY_BEFORE, PROBABILITY_AFTER, VERTICES};
+        return createTable(this.title, rowData, columnNames);
     }
 
     @NotNull
     private JScrollPane addDegreeToVerticesTable(Graph dataSetModel) {
         Object[][] rowData = prepareDegreeToVerticesModel(dataSetModel);
         Object columnNames[] = {DEGREE, VERTICES};
-        return createTable(dataSetModel.getTitle(), rowData, columnNames);
+        return createTable(this.title, rowData, columnNames);
     }
 
     private JScrollPane addParitionsTable(Graph dataSetModel) {
-        Object[][] rowData = preparePartitionsModel(dataSetModel.getPartitions());
+        Object[][] rowData = preparePartitionsModel(this.partitions);
         Object columnNames[] = {SIZE, PARTITIONS};
-        return createTable(dataSetModel.getTitle(), rowData, columnNames);
+        return createTable(this.title, rowData, columnNames);
     }
 
     private Object[][] preparePartitionsModel(List<List<Vertex>> partitions) {
@@ -201,7 +273,7 @@ public class TableView extends JPanel {
         this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title, TitledBorder.CENTER, TitledBorder.TOP));
         table.setPreferredScrollableViewportSize(table.getPreferredSize());
         table.setFillsViewportHeight(true);
-        table.setAutoCreateRowSorter(true);
+        //table.setAutoCreateRowSorter(true);
         //table.getRowSorter().toggleSortOrder(0);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         // add the scroll pane wrapper:
@@ -220,7 +292,18 @@ public class TableView extends JPanel {
         while (iterator.hasNext()) {
             Vertex vertex = iterator.next();
             Set<Vertex> verticesNeighborsSet = vertexToNeighbors.get(vertex);
-            rowData[i] = new Object[]{vertex.getName(), Arrays.toString(verticesNeighborsSet.toArray())};
+
+            Double afterProp = 0.0;
+            if (vertexAfterToSameDegree != null) {
+                afterProp = vertexAfterToSameDegree.get(vertex);
+            }
+
+            Double beforeProp = 0.0;
+            if (vertexBeforeToSameDegree != null) {
+                beforeProp = vertexBeforeToSameDegree.get(vertex);
+            }
+
+            rowData[i] = new Object[]{vertex.getName(), beforeProp, afterProp, Arrays.toString(verticesNeighborsSet.toArray())};
             i++;
         }
         return rowData;
@@ -260,7 +343,7 @@ public class TableView extends JPanel {
         //create a window to display...
         JFrame jf = new JFrame("Demo Table");
         Graph dataSetToModel = demoDataCreatorLocal.generateRandomGraph();
-        TableView chart = new TableView(dataSetToModel);
+        TableView chart = new TableView(dataSetToModel, dataSetToModel, 0, "algo1", "5", "dataset1");
         jf.add(chart);
 
         //do something when click on x

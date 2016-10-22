@@ -59,8 +59,6 @@ public class DataSetController {
         List<String> values = fileUtils.loadDataSet(fileName);
         int size = values.size();
         Graph model = new Graph();
-        model.setDataSet(dataSet);
-        model.setTitle("Original " + dataSet);
         for (int i = 0; i < size; i++) {
             String valueRow = values.get(i);
             // split by spaces
