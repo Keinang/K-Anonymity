@@ -21,8 +21,9 @@ public class SearchTreeNode<V extends Vertex> {
             splittingList.addAll(parent.getSplittingList());
             parent.getChildren().add(this);
         }
-        if (split != null)
+        if (split != null) {
             splittingList.add(split);
+        }
     }
 
     public OrderedPartition<V> getNodePartition() {

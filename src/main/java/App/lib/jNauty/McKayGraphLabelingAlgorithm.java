@@ -18,20 +18,38 @@ import java.util.*;
 public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
     private static Logger logger = Logger.getLogger(McKayGraphLabelingAlgorithm.class);
 
+    public List<List<Integer>> getCyclicRepresenatation(Graph graph) {
+        List<Permutation> automorphisms = findAutomorphisms(graph);
+        logger.debug("Done to findAutomorphisms");
+        if (automorphisms == null || automorphisms.size() == 0) {
+            logger.debug("No orbits found");
+            return null;
+        }
+
+        // 1.1 take the last automorphism and fetch his orbits
+        Permutation p = automorphisms.get(automorphisms.size() - 1);
+        return p.cyclicRepresenatation();
+    }
+
     public List<Permutation> findAutomorphisms(Graph graph) {
         // get information from graph:
         Map<Vertex, Set<Vertex>> vertexToNeighbors = graph.getVertexToNeighbors();
         Set<Edge> edges = graph.getEdges();
 
         // create ordered partition
+        logger.debug("Start create ordered partition");
         OrderedPartition<Vertex> pi = getVertexOrderedPartition(graph.getVertices());
         // refinement
+        logger.debug("Start refinement");
         OrderedPartition<Vertex> refined = refinementProcedure(pi, vertexToNeighbors);
-        // craeting search tree
+
+        // creating search tree
+        logger.debug("Start creating search tree");
         SearchTree<Vertex> tree = createSearchTree(refined, vertexToNeighbors);
         List<SearchTreeNode<Vertex>> terminalNodes = tree.getTerminalNodes();
         // finding automorphisms
-        return findAutomorphismsInner(terminalNodes, graph.getVertices(), vertexToNeighbors, edges);
+        List<Permutation> automorphismsInner = findAutomorphismsInner(terminalNodes, graph.getVertices(), vertexToNeighbors, edges);
+        return automorphismsInner;
     }
 
     private OrderedPartition<Vertex> getVertexOrderedPartition(List<Vertex> vertices) {
@@ -45,59 +63,68 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
         List<Pair<List<Vertex>, List<Vertex>>> B = new ArrayList<Pair<List<Vertex>, List<Vertex>>>();
         Map<Integer, List<Vertex>> degreesMap = new HashMap<Integer, List<Vertex>>();
 
-        while (true) {
+        int maxLoop = 5;
+        int counter = 0;
+        while (counter < maxLoop) {
+            counter++;
+            //logger.debug("refinementProcedure - Iteration start");
             B.clear();
-            for (List<Vertex> Vi : tau.getPartition()) {
-                for (List<Vertex> Vj : tau.getPartition()) {
+            List<List<Vertex>> partition = tau.getPartition();
+            List<List<Vertex>> partition2 = tau.getPartition();
+            for (int i = 0; i < partition.size(); i++) {
+                List<Vertex> Vi = partition.get(i);
+
+                for (int j = 0; j < partition2.size(); j++) {
                     //check if Vj shatters Vi
-                    int deg = deg(Vi.get(0), Vj, vertexToNeighbors);
-                    for (int i = 1; i < Vi.size(); i++) {
-                        if (deg(Vi.get(i), Vj, vertexToNeighbors) != deg) {
-                            B.add(new Pair<List<Vertex>, List<Vertex>>(Vi, Vj));
-                            break;
-                        }
+                    List<Vertex> Vj = partition2.get(j);
+
+                    if (isDegreeShatters(Vi, Vj, vertexToNeighbors)) {
+                        B.add(new Pair(Vi, Vj));
+                        break;
                     }
                 }
             }
 
-            if (B.size() == 0)
+            logger.debug("refinementProcedure - B size: " + B.size());
+            if (B.size() == 0) {
                 break;
-
-            //System.out.println("B: " + B);
+            }
 
             //now find the minimum element
+            //logger.debug("refinementProcedure - find the minimum element");
             Pair<List<Vertex>, List<Vertex>> minimalPair = findMinimal(B, vertexToNeighbors);
 
-            //System.out.println("Minimal pair is " + minimalPair );
-
             //now replace Vi with X1,X2,...Xt
+            //logger.debug("refinementProcedure - replace Vi with X1,X2,...Xt");
             degreesMap.clear();
             List<Vertex> Vi = minimalPair.getKey();
             List<Vertex> Vj = minimalPair.getValue();
 
             List<Integer> degrees = new ArrayList<Integer>();
-            for (Vertex v : Vi) {
-                Integer deg = deg(v, Vj, vertexToNeighbors);
+            for (int i = 0; i < Vi.size(); i++) {
+                Integer deg = getRetainDegree(Vi, i, Vj, vertexToNeighbors);
                 List<Vertex> verticesWithDegree = degreesMap.get(deg);
                 if (verticesWithDegree == null) {
                     verticesWithDegree = new ArrayList<Vertex>();
                     degreesMap.put(deg, verticesWithDegree);
                 }
-                verticesWithDegree.add(v);
-                if (!degrees.contains(deg))
+                verticesWithDegree.add(Vi.get(i));
+                if (!degrees.contains(deg)) {
                     degrees.add(deg);
+                }
             }
 
-            //sort, to insert those with lower degrees first
+            // sort to insert those with lower degrees first
+            //logger.debug("refinementProcedure - sort");
             Collections.sort(degrees);
 
+            //logger.debug("refinementProcedure - replacements");
             List<List<Vertex>> replacements = new ArrayList<List<Vertex>>();
             for (Integer degree : degrees) {
                 replacements.add(degreesMap.get(degree));
             }
 
             tau.replace(Vi, replacements);
-
         }
         return tau;
     }
@@ -107,30 +134,36 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
      * (a,b) <= (c,d) if a<c or a=c and b<=d
      */
     private Pair<List<Vertex>, List<Vertex>> findMinimal(List<Pair<List<Vertex>, List<Vertex>>> B, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
+        //logger.debug("findMinimal - Start");
         Pair<List<Vertex>, List<Vertex>> minimalPair = null;
         String minimalBinary1 = null;
         String minimalBinary2 = null;
 
         for (Pair<List<Vertex>, List<Vertex>> separationPair : B) {
-
+            //logger.debug("findMinimal - iteration");
+            //logger.debug("findMinimal - start binaryRepresenatation for binary1");
             String binary1 = BinaryRepresentation.binaryRepresenatation(separationPair.getKey(), vertexToNeighbors);
+            //logger.debug("findMinimal - done binaryRepresenatation for binary1");
 
             if (minimalPair == null) {
                 minimalPair = separationPair;
                 minimalBinary1 = binary1;
             } else {
-
                 //compare current to minimal
-
                 if (binary1.compareTo(minimalBinary1) < 0) {
                     minimalPair = separationPair;
                     minimalBinary1 = binary1;
                     minimalBinary2 = null;
                 } else if (binary1.compareTo(minimalBinary1) == 0) {
-                    if (minimalBinary2 == null)
+                    if (minimalBinary2 == null) {
+                        //logger.debug("findMinimal - start binaryRepresenatation for minimalBinary2");
                         minimalBinary2 = BinaryRepresentation.binaryRepresenatation(minimalPair.getValue(), vertexToNeighbors);
+                        //logger.debug("findMinimal - done binaryRepresenatation for minimalBinary2");
+                    }
 
+                    //logger.debug("findMinimal - start binaryRepresenatation for binary2");
                     String binary2 = BinaryRepresentation.binaryRepresenatation(separationPair.getValue(), vertexToNeighbors);
+                    //logger.debug("findMinimal - done binaryRepresenatation for binary2");
                     if (binary2.compareTo(minimalBinary2) <= 0) {
                         minimalPair = separationPair;
                         minimalBinary1 = binary1;
@@ -140,8 +173,8 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
                 }
             }
         }
-
-        //System.out.println("Minimap pair is: " + minimalPair.getKey() + " " + minimalPair.getValue());
+        //logger.debug("findMinimal - Done");
+        //System.out.println("Minimal pair is: " + minimalPair.getKey() + " " + minimalPair.getValue());
         return minimalPair;
     }
 
@@ -154,11 +187,14 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
     }
 
     private void createSearchTree(SearchTreeNode<Vertex> currentNode, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
+        logger.debug("start createSearchTree recursive");
         //split tree note, create children, process children
         OrderedPartition<Vertex> currentPartition = currentNode.getNodePartition();
         List<Vertex> firstNontrivialrPart = currentPartition.getFirstNontrivialPart();
-        if (firstNontrivialrPart == null)
+        if (firstNontrivialrPart == null) {
             return;
+        }
+
         //System.out.println("Current partition: " + currentPartition);
         for (Vertex u : firstNontrivialrPart) {
             //System.out.println("Splitting by " + u);
@@ -167,7 +203,8 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
             //System.out.println(partition);
             new SearchTreeNode<Vertex>(partition, u, currentNode);
         }
-        for (SearchTreeNode<Vertex> node : currentNode.getChildren()) {
+        List<SearchTreeNode<Vertex>> children = currentNode.getChildren();
+        for (SearchTreeNode<Vertex> node : children) {
             createSearchTree(node, vertexToNeighbors);
         }
     }
@@ -261,15 +298,33 @@ public class McKayGraphLabelingAlgorithm<V extends Vertex, E extends Edge> {
         return new Permutation(permutation);
     }
 
+    private boolean isDegreeShatters(List<Vertex> Vi, List<Vertex> Vj, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
+        // Degree of first Vertex in Vi
+        int deg = getRetainDegree(Vi, 0, Vj, vertexToNeighbors);
 
-    private int deg(Vertex v, List<Vertex> Vj, Map<Vertex, Set<Vertex>> vertexToNeighborsm) {
+        // iterate Vi to
+        for (int m = 1; m < Vi.size(); m++) {
+            int degM = getRetainDegree(Vi, m, Vj, vertexToNeighbors);
+
+            if (degM != deg) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int getRetainDegree(List<Vertex> Vi, int idx, List<Vertex> Vj, Map<Vertex, Set<Vertex>> vertexToNeighbors) {
+        Set<Vertex> v0Neighbors = vertexToNeighbors.get(Vi.get(idx));
         int deg = 0;
-        Set<Vertex> vertices = vertexToNeighborsm.get(v);
-        for (Vertex test : vertices) {
-            if (Vj.contains(test)) {
+        for (Vertex vNeighbor : v0Neighbors) {
+            if (Vj.contains(vNeighbor)) {
                 deg++;
             }
         }
+
         return deg;
     }
 }
+
+

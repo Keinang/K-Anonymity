@@ -5,11 +5,9 @@ import App.Common.Utils.DemoDataCreator;
 import App.Model.Graph;
 import App.Model.Vertex;
 import App.lib.jNauty.McKayGraphLabelingAlgorithm;
-import App.lib.jNauty.Permutation;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,17 +27,11 @@ public class KSymmetry implements IAlgorithm {
     public Graph anonymize(Graph graph, Integer k) {
         // 1. fetch orbits from the graph by jNauty algorithm (McKay).
         logger.debug("Start to findAutomorphisms");
-        List<Vertex> vertices = CollectionUtils.arrayToList(graph.getVertices().toArray());
-        List<Permutation> automorphisms = jNauty.findAutomorphisms(graph);
-        logger.debug("Done to findAutomorphisms");
-        if (automorphisms == null || automorphisms.size() == 0) {
+        List<List<Integer>> orbits = jNauty.getCyclicRepresenatation(graph);
+        if (orbits == null) {
             logger.debug("No orbits found");
             return graph;
         }
-
-        // 1.1 take the last automorphism and fetch his orbits
-        Permutation p = automorphisms.get(automorphisms.size() - 1);
-        List<List<Integer>> orbits = p.cyclicRepresenatation();
         logger.debug(String.format("found %s orbits", orbits.size()));
 
         // 2. for each orbit -> call ocp until size at least k.
@@ -82,7 +74,7 @@ public class KSymmetry implements IAlgorithm {
 
             Vertex v = vertices.get(idx);
             String name = v.getName();
-            if (name.startsWith("-")){
+            if (name.startsWith("-")) {
                 continue; // not copying tag vertices, only originals.
             }
 
@@ -131,9 +123,9 @@ public class KSymmetry implements IAlgorithm {
      * @param name - vertex name
      * @return the name with tag (* -1)
      */
-    private String createVertexTagName(String name , int copyCounter) {
+    private String createVertexTagName(String name, int copyCounter) {
         StringBuilder sb = new StringBuilder();
-        for (int i=0; i< copyCounter; i++){
+        for (int i = 0; i < copyCounter; i++) {
             sb.append("-");
         }
 
