@@ -1,7 +1,7 @@
 package App.Controller;
 
-import App.Model.Graph;
 import App.Common.Utils.FileUtil;
+import App.Model.Graph;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,11 +14,13 @@ public class DataSetController {
     private static Logger logger = Logger.getLogger(DataSetController.class);
 
     public static final String FACEBOOK_CIRCLES = "Facebook circles";
+    public static final String FACEBOOK_CIRCLES_FILE = "/DataSets/facebook_combined.txt";
     public static final String WIKIPEDIA_VOTING = "Wikipedia voting";
+    public static final String WIKI_VOTE_FILE = "/DataSets/wiki-Vote.txt";
     public static final String TWITTER_CIRCLES = "Twitter circles";
-    public static final String FACEBOOK_CIRCLES_FILE = "/facebook_combined.txt";
-    public static final String WIKI_VOTE_FILE = "/wiki-Vote.txt";
-    public static final String TWITTER_COMBINED_FILE = "/twitter_combined.txt";
+    public static final String TWITTER_COMBINED_FILE = "/DataSets/twitter_combined.txt";
+    public static final String ARXIV = "Arxiv Collaboration Network";
+    public static final String ARXIV_FILE = "/DataSets/Arxiv_collaboration_network.txt";
 
     @Autowired
     private FileUtil fileUtils;
@@ -34,6 +36,9 @@ public class DataSetController {
     private void addDataSets() {
         dataSetsNames.add(FACEBOOK_CIRCLES);
         dataSetNameToFileName.put(FACEBOOK_CIRCLES, FACEBOOK_CIRCLES_FILE);
+
+        dataSetsNames.add(ARXIV);
+        dataSetNameToFileName.put(ARXIV, ARXIV_FILE);
 
         dataSetsNames.add(WIKIPEDIA_VOTING);
         dataSetNameToFileName.put(WIKIPEDIA_VOTING, WIKI_VOTE_FILE);

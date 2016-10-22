@@ -16,6 +16,8 @@ public class Graph implements Serializable {
     private boolean isAnonymized = false;
     private long duration = 0;
     private int edgeAdded;
+    private List<List<Vertex>> partitions;
+    private int verticesAdded;
 
     public Graph() {
         edges = new HashSet<>();
@@ -125,5 +127,21 @@ public class Graph implements Serializable {
 
     public int getEdgeAdded() {
         return edgeAdded;
+    }
+
+    public void setPartitions(List<List<Vertex>> partitions) {
+        this.partitions = partitions;
+    }
+
+    public List<List<Vertex>> getPartitions() {
+        return partitions;
+    }
+
+    public void setVerticesAdded(int verticesAdded) {
+        this.verticesAdded = verticesAdded;
+    }
+
+    public Integer getVerticesAdded() {
+        return this.verticesAdded;
     }
 }

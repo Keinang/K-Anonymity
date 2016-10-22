@@ -1,8 +1,8 @@
 package App.View;
 
+import App.Common.Utils.DemoDataCreator;
 import App.Model.Graph;
 import App.Model.Vertex;
-import App.Common.Utils.DemoDataCreator;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -12,6 +12,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static App.Controller.DataSetController.getDegreeFreq;
 
@@ -24,6 +25,8 @@ public class TableView extends JPanel {
     public static final String VERTEX = "Vertex";
     public static final String TOTAL_EDGES = "Total Edges";
     public static final String TOTAL_VERTICES = "Total Vertices";
+    public static final String SIZE = "Size";
+    public static final String PARTITIONS = "Partitions";
 
     public TableView(Graph dataSetToModel) {
         setUI(dataSetToModel);
@@ -37,17 +40,25 @@ public class TableView extends JPanel {
         // add tables
         JScrollPane degreeToVerticesPane = addDegreeToVerticesTable(dataSetModel);
         JScrollPane vertexToVerticesPane = addVertexToVerticesTable(dataSetModel);
+        JScrollPane partitionsPane = new JScrollPane();
+
+        if (dataSetModel.getPartitions() != null) {
+            partitionsPane = addParitionsTable(dataSetModel);
+        }
+
         JPanel indicationsPanel = addIndicationPanel(dataSetModel);
 
         layout.setHorizontalGroup(layout.createSequentialGroup()
                 .addComponent(degreeToVerticesPane)
                 .addComponent(vertexToVerticesPane)
+                .addComponent(partitionsPane)
                 .addComponent(indicationsPanel)
         );
 
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addComponent(degreeToVerticesPane)
                 .addComponent(vertexToVerticesPane)
+                .addComponent(partitionsPane)
                 .addComponent(indicationsPanel)
         );
     }
@@ -61,19 +72,24 @@ public class TableView extends JPanel {
 
         // Total values:
         JLabel totalVerticesLabel = new JLabel(TOTAL_VERTICES);
-        JLabel totalVerticesLabelValue = new JLabel(String.valueOf(dataSetModel.getVertices().size()));
+        List<Vertex> vertices = dataSetModel.getVertices();
+        JLabel totalVerticesLabelValue = new JLabel(String.valueOf(vertices.size()));
+
+        Integer verticesAdded = dataSetModel.getVerticesAdded();
+        JLabel verticesAddedLabel = new JLabel("Vertices added (%)");
+        JLabel verticesAddedLabelValue = new JLabel(String.format("%s (%.2f%s)", verticesAdded, ((verticesAdded * 100.0f / (vertices.size() - verticesAdded))), "%"));
 
         int totalEdges = dataSetModel.getEdges().size();
         JLabel totalEdgesLabel = new JLabel(TOTAL_EDGES);
         JLabel totalEdgesLabelValue = new JLabel(String.valueOf(totalEdges));
 
-        // Values after running the algorithm
-        JLabel durationLabel = new JLabel("Duration");
-        JLabel durationLabelValue = new JLabel(String.format("%ssec", dataSetModel.getDuration() / 1000.0f));
-
         Integer edgeAdded = dataSetModel.getEdgeAdded();
         JLabel edgesAddedLabel = new JLabel("Edges added (%)");
         JLabel edgesAddedLabelValue = new JLabel(String.format("%s (%.2f%s)", edgeAdded, ((edgeAdded * 100.0f / (totalEdges - edgeAdded))), "%"));
+
+        // Values after running the algorithm
+        JLabel durationLabel = new JLabel("Duration");
+        JLabel durationLabelValue = new JLabel(String.format("%ssec", dataSetModel.getDuration() / 1000.0f));
 
         JLabel obfuscationLeveldLabel = new JLabel("Obfuscation Level");
         JLabel obfuscationLeveldLabelValue = new JLabel();
@@ -82,16 +98,18 @@ public class TableView extends JPanel {
         layout.setHorizontalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(totalVerticesLabel)
+                        .addComponent(verticesAddedLabel)
                         .addComponent(totalEdgesLabel)
-                        .addComponent(durationLabel)
                         .addComponent(edgesAddedLabel)
+                        .addComponent(durationLabel)
                         .addComponent(obfuscationLeveldLabel)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(totalVerticesLabelValue)
+                        .addComponent(verticesAddedLabelValue)
                         .addComponent(totalEdgesLabelValue)
-                        .addComponent(durationLabelValue)
                         .addComponent(edgesAddedLabelValue)
+                        .addComponent(durationLabelValue)
                         .addComponent(obfuscationLeveldLabelValue)
                 )
         );
@@ -102,26 +120,31 @@ public class TableView extends JPanel {
                         .addComponent(totalVerticesLabelValue)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(totalEdgesLabel)
-                        .addComponent(totalEdgesLabelValue)
+                        .addComponent(verticesAddedLabel)
+                        .addComponent(verticesAddedLabelValue)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(durationLabel)
-                        .addComponent(durationLabelValue)
+                        .addComponent(totalEdgesLabel)
+                        .addComponent(totalEdgesLabelValue)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(edgesAddedLabel)
                         .addComponent(edgesAddedLabelValue)
                 )
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(durationLabel)
+                        .addComponent(durationLabelValue)
+                )
+
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(obfuscationLeveldLabel)
                         .addComponent(obfuscationLeveldLabelValue)
                 )
-
         );
         return indicationPanel;
     }
 
+    @NotNull
     private JScrollPane addVertexToVerticesTable(Graph dataSetModel) {
         Object[][] rowData = prepareVertexToVerticesModel(dataSetModel);
         Object columnNames[] = {VERTEX, VERTICES};
@@ -135,14 +158,31 @@ public class TableView extends JPanel {
         return createTable(dataSetModel.getTitle(), rowData, columnNames);
     }
 
+    private JScrollPane addParitionsTable(Graph dataSetModel) {
+        Object[][] rowData = preparePartitionsModel(dataSetModel.getPartitions());
+        Object columnNames[] = {SIZE, PARTITIONS};
+        return createTable(dataSetModel.getTitle(), rowData, columnNames);
+    }
+
+    private Object[][] preparePartitionsModel(List<List<Vertex>> partitions) {
+        Object rowData[][] = new Object[partitions.size()][1];
+
+        int i = 0;
+        for (List<Vertex> partition : partitions) {
+            rowData[i] = new Object[]{partition.size(), partition};
+            i++;
+        }
+        return rowData;
+    }
+
     @NotNull
     private JScrollPane createTable(String title, final Object[][] rowData, Object[] columnNames) {
         DefaultTableModel model = new DefaultTableModel(rowData, columnNames) {
             @Override
             public Class getColumnClass(int column) {
-                if (column == 0) {
+                /*if (column == 0) {
                     return Integer.class;
-                }
+                }*/
                 return String.class;
             }
         };
@@ -162,7 +202,7 @@ public class TableView extends JPanel {
         table.setPreferredScrollableViewportSize(table.getPreferredSize());
         table.setFillsViewportHeight(true);
         table.setAutoCreateRowSorter(true);
-        table.getRowSorter().toggleSortOrder(0);
+        //table.getRowSorter().toggleSortOrder(0);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         // add the scroll pane wrapper:
         JScrollPane scrollPane = new JScrollPane(table);
@@ -180,7 +220,7 @@ public class TableView extends JPanel {
         while (iterator.hasNext()) {
             Vertex vertex = iterator.next();
             Set<Vertex> verticesNeighborsSet = vertexToNeighbors.get(vertex);
-            rowData[i] = new Object[]{Integer.valueOf(vertex.getName()), Arrays.toString(verticesNeighborsSet.toArray())};
+            rowData[i] = new Object[]{vertex.getName(), Arrays.toString(verticesNeighborsSet.toArray())};
             i++;
         }
         return rowData;

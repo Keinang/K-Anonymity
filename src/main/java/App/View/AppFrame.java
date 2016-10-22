@@ -167,18 +167,18 @@ public class AppFrame extends JFrame {
         // run the algorithm
         Thread thread = new Thread(new Runnable() {
             public void run() {
-                Graph dataSetToModel = dataSetController.getDataSetToModel(dataSet);
-                if (dataSetToModel == null) {
+                Graph originalData = dataSetController.getDataSetToModel(dataSet);
+                if (originalData == null) {
                     return;
                 }
-                Graph originalClone = (Graph) SerializationUtils.clone(dataSetToModel);
+                Graph originalClone = (Graph) SerializationUtils.clone(originalData);
                 logger.debug(String.format("Start Algorithm %s on dataSet %s with K eqaul to %s", algorithm, dataSet, k));
-                long before = System.currentTimeMillis();
+                long msBeforeRun = System.currentTimeMillis();
 
                 Graph anonymizeData = algorithmController.anonymize(algorithm, originalClone, Integer.valueOf(k));
 
                 if (anonymizeData != null){
-                    addViewToPanel(anonymizeData, before, algorithm, k);
+                    addViewToPanel(originalData, anonymizeData, msBeforeRun, algorithm, k);
                 }
 
                 // finish busy indication
@@ -193,24 +193,27 @@ public class AppFrame extends JFrame {
         executeButton.setEnabled(isEnabled);
     }
 
-    private void addViewToPanel(Graph dataSetToModel, long before, String algorithm, String k) {
+    private void addViewToPanel(Graph originalData, Graph anonymizedData, long before, String algorithm, String k) {
         if (before > 0) {
-            dataSetToModel.setEdgeAdded(dataSetToModel.getEdges().size() - dataSetToModel.getEdges().size());
+            // diff
+            anonymizedData.setEdgeAdded(anonymizedData.getEdges().size() - originalData.getEdges().size());
+            anonymizedData.setVerticesAdded(anonymizedData.getVertices().size() - originalData.getVertices().size());
+            // time calculation
             long after = System.currentTimeMillis();
-            dataSetToModel.setDuration(after - before);
-            dataSetToModel.setAnonymized(true);
+            anonymizedData.setDuration(after - before);
+            anonymizedData.setAnonymized(true);
         }
 
         if (StringUtils.isNotEmpty(algorithm) && StringUtils.isNotEmpty(k)) {
-            dataSetToModel.setTitle(String.format("%s Anonymized with %s", k, algorithm));
+            anonymizedData.setTitle(String.format("%s anonymized with %s", k, algorithm));
         }
 
-        TableView table = new TableView(dataSetToModel);
-        JPanel chartPanel = (JPanel) dataSetToChartPanel.get(dataSetToModel.getDataSet());
+        TableView table = new TableView(anonymizedData);
+        JPanel chartPanel = (JPanel) dataSetToChartPanel.get(anonymizedData.getDataSet());
         chartPanel.add(table);
         chartPanel.revalidate();
         chartPanel.repaint();
-        logger.debug(String.format("Done adding new chart %s", dataSetToModel.getDataSet()));
+        logger.debug(String.format("Done adding new chart %s", anonymizedData.getDataSet()));
     }
 
     private void initAlgorithms() {
@@ -336,7 +339,7 @@ public class AppFrame extends JFrame {
                     Thread thread = new Thread(new Runnable() {
                         public void run() {
                             Graph dataSetToModel = dataSetController.getDataSetToModel(dataSet);
-                            addViewToPanel(dataSetToModel, 0, null, null);
+                            addViewToPanel(dataSetToModel, dataSetToModel, 0, null, null);
                             setBusyIndication(StringUtils.EMPTY, true);
                         }
                     });

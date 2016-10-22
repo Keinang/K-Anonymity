@@ -5,6 +5,7 @@ import App.Common.Utils.DemoDataCreator;
 import App.Model.Graph;
 import App.Model.Vertex;
 import App.lib.jNauty.McKayGraphLabelingAlgorithm;
+import App.lib.jNauty.StabgraphAlgorithm;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,24 +24,32 @@ public class KSymmetry implements IAlgorithm {
     @Autowired
     private McKayGraphLabelingAlgorithm jNauty;
 
+    @Autowired
+    private StabgraphAlgorithm stabgraphAlgorithm;
+
     @Override
     public Graph anonymize(Graph graph, Integer k) {
         // 1. fetch orbits from the graph by jNauty algorithm (McKay).
         logger.debug("Start to findAutomorphisms");
-        List<List<Integer>> orbits = jNauty.getCyclicRepresenatation(graph);
+        List<List<Vertex>> orbits = stabgraphAlgorithm.getCyclicRepresenatation(graph);
         if (orbits == null) {
             logger.debug("No orbits found");
             return graph;
         }
+        List<List<Vertex>> anonymizedOrbits = new ArrayList<>();
         logger.debug(String.format("found %s orbits", orbits.size()));
 
         // 2. for each orbit -> call ocp until size at least k.
         for (int i = 0; i < orbits.size(); i++) {
             logger.debug(String.format("Iteration for orbit %s", i));
 
-            List<Integer> orbit = orbits.get(i);
+            List<Vertex> orbit = orbits.get(i);
             if (orbit.size() >= k) {
+                /*for (Vertex v: orbit){
+                    logger.debug("Vertex not copied: " + v);
+                }*/
                 logger.debug(String.format("orbit %s size above k", i));
+                anonymizedOrbits.add(orbit);
                 continue;
             }
             // orbit size is below k, calling ocp procedure.
@@ -51,10 +60,12 @@ public class KSymmetry implements IAlgorithm {
                 copyCounter++;
                 logger.debug(String.format("Done orbitCopying for orbit %s", i));
             }
+            anonymizedOrbits.add(orbit);
         }
 
         // 3. return the anonymized graph
         logger.debug("return the anonymized graph");
+        graph.setPartitions(anonymizedOrbits);
         return graph;
     }
 
@@ -64,15 +75,15 @@ public class KSymmetry implements IAlgorithm {
      * @param graph - the graph
      * @param orbit - the orbit that will be copied.
      */
-    private List<Integer> orbitCopying(Graph graph, List<Integer> orbit, int copyCounter) {
+    private List<Vertex> orbitCopying(Graph graph, List<Vertex> orbit, int copyCounter) {
         Map<Vertex, Set<Vertex>> vertexToNeighbors = graph.getVertexToNeighbors();
-        List<Integer> orbitTemp = new ArrayList<>(orbit);
+        List<Vertex> orbitTemp = new ArrayList<>(orbit);
         // 1. for each vertex in orbit
-        for (Integer idx : orbit) {
+        for (Vertex v : orbit) {
             // 1.1. introduce new vertex into the graph and add to orbit
             List<Vertex> vertices = graph.getVertices();
 
-            Vertex v = vertices.get(idx);
+            //Vertex v = vertices.get(idx);
             String name = v.getName();
             if (name.startsWith("-")) {
                 continue; // not copying tag vertices, only originals.
@@ -84,7 +95,7 @@ public class KSymmetry implements IAlgorithm {
             graph.addVertex(vTag);
 
             // add vertex into the orbit
-            orbitTemp.add(vertices.indexOf(vTag));
+            orbitTemp.add(vTag);//vertices.indexOf(vTag));
 
             // 1.2. connect new edges according to orbits.
             Set<Vertex> vertexNeighbors = vertexToNeighbors.get(v);
@@ -93,7 +104,7 @@ public class KSymmetry implements IAlgorithm {
                     // in same orbit connecting them by tag
                     graph.addEdge(vTag, new Vertex(createVertexTagName(neighbor.getName(), copyCounter)));
                 } else {
-                    // in same orbit connecting them regularly
+                    // in other orbit connecting them regularly
                     graph.addEdge(vTag, neighbor);
                 }
             }
@@ -108,7 +119,7 @@ public class KSymmetry implements IAlgorithm {
      * @param orbit    - an orbit to check in
      * @return true if neighbor is part of the orbit, false otherwise.
      */
-    private boolean isInSameOrbit(Vertex neighbor, List<Vertex> vertices, List<Integer> orbit) {
+    private boolean isInSameOrbit(Vertex neighbor, List<Vertex> vertices, List<Vertex> orbit) {
         int neighborIdx = vertices.indexOf(neighbor);
         if (neighborIdx < 0) {
             return false;
@@ -137,6 +148,7 @@ public class KSymmetry implements IAlgorithm {
 
         KSymmetry algo = new KSymmetry();
         algo.jNauty = new McKayGraphLabelingAlgorithm();
+        algo.stabgraphAlgorithm = new StabgraphAlgorithm();
 
         // k=2
         //Graph anonymize = algo.anonymize(DemoDataCreator.generateGraphSymmetry(), 2);

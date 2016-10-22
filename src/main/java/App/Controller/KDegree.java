@@ -23,8 +23,8 @@ public class KDegree implements IAlgorithm {
     /**
      * Main function
      *
-     * @param originalGraph
-     * @param k
+     * @param originalGraph - original graph to anonymize
+     * @param k - the K input parameter from the user
      * @return anonymized graph
      */
     @Override
@@ -52,6 +52,10 @@ public class KDegree implements IAlgorithm {
         }
     }
 
+    /**
+     * Adding some noise (a random number of edges) because after anonymization it wasn't realized.
+     * @param originalGraph
+     */
     private void addNoise(Graph originalGraph) {
         List<Vertex> vertices = originalGraph.getVertices();
 
@@ -97,6 +101,12 @@ public class KDegree implements IAlgorithm {
         return anonymizedDegrees; // they are now anonymized
     }
 
+    /**
+     * Setting the same degree to all indices in vector between from and to
+     * @param from - start index
+     * @param to - end index
+     * @param vector - vector of degrees
+     */
     private void degreeAnonymizationGroup(int from, int to, DegreeContext[] vector) {
         //System.out.println("Grouping [" + from + ", " + to + "]");
         int degree = vector[from].getDegree();
@@ -105,6 +115,13 @@ public class KDegree implements IAlgorithm {
         }
     }
 
+    /**
+     * Recursive mathod to anonymize the vector of degrees
+     * @param from - start index
+     * @param to - end index
+     * @param vector - vector of degrees
+     * @param k - the K input parameter for indicate the size of group with the same degree
+     */
     private void degreeAnonymizationRecursive(int from, int to, DegreeContext[] vector, Integer k) {
         int size = to - from;
         if (size < 2 * k) {
@@ -116,6 +133,11 @@ public class KDegree implements IAlgorithm {
         }
     }
 
+    /**
+     * Updating the anonymized vector with only number of 'need to add' edges.
+     * @param originalDegrees - the anonymized vector
+     * @param anonymizeDegreeVector - the anonymized vector of how many 'need to add' edges.
+     */
     private void createAdditionalDegreeVector(DegreeContext[] originalDegrees, DegreeContext[] anonymizeDegreeVector) {
         for (int i = 0; i < anonymizeDegreeVector.length; i++) {
             int anonymizedDegree = anonymizeDegreeVector[i].getDegree();
@@ -142,6 +164,13 @@ public class KDegree implements IAlgorithm {
         return supergraphRecusive(originalGraph, additionalDegreeVector);
     }
 
+    /**
+     * Building the graph from the additionalDegreeVector
+     * @param originalGraph - the original graph we start from
+     * @param additionalDegreeVector - the anonymized vector we would like to build a new graph from.
+     * @return a new anonymized graph build from the additionalDegreeVector
+     * @throws NotRealizedGraphException
+     */
     private Graph supergraphRecusive(Graph originalGraph, DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
         // check if there exist a degree with minus value in additional vector and throw exception
         checkMinusDegree(additionalDegreeVector);
@@ -190,6 +219,13 @@ public class KDegree implements IAlgorithm {
         }
     }
 
+    /**
+     * @param additionalDegreeVector - the anonymized vector.
+     * @param degreeContext - a vertex we would like to pair to another vertex
+     * @param vertexNeighbors - the map of degree to vertices
+     * @return The next valid vertex to connect an edge to.
+     * @throws NotRealizedGraphException
+     */
     private DegreeContext nextValidVertexToConnect(DegreeContext[] additionalDegreeVector, DegreeContext degreeContext, Set<Vertex> vertexNeighbors) throws NotRealizedGraphException {
         for (int i = 0; i < additionalDegreeVector.length; i++) {
             DegreeContext randomVertex = additionalDegreeVector[i];
@@ -204,6 +240,11 @@ public class KDegree implements IAlgorithm {
         throw new NotRealizedGraphException("No more edges to connect");
     }
 
+    /**
+     *
+     * @param additionalDegreeVector - the anonymized vector
+     * @return the next vertex with positive degree we need to find pair.
+     */
     private DegreeContext nextPositiveDegree(DegreeContext[] additionalDegreeVector) {
         for (int i = 0; i < additionalDegreeVector.length; i++) {
             DegreeContext degreeContext = additionalDegreeVector[i];
@@ -215,6 +256,11 @@ public class KDegree implements IAlgorithm {
         return null;
     }
 
+    /**
+     *
+     * @param additionalDegreeVector - the anonymized vector
+     * @return how many edges we need to find
+     */
     private int sumVector(DegreeContext[] additionalDegreeVector) {
         int sum = 0;
         for (int i = 0; i < additionalDegreeVector.length; i++) {
@@ -223,6 +269,11 @@ public class KDegree implements IAlgorithm {
         return sum;
     }
 
+    /**
+     *  Checking if the vector contain minus degree, which means it could not be realized to a graph.
+     * @param additionalDegreeVector
+     * @throws NotRealizedGraphException
+     */
     private void checkMinusDegree(DegreeContext[] additionalDegreeVector) throws NotRealizedGraphException {
         for (int i = 0; i < additionalDegreeVector.length; i++) {
             if (additionalDegreeVector[i].getDegree() < 0) {

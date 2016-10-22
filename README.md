@@ -11,11 +11,14 @@ A simulator for preserving anonymity on social networks.
 * Problem: The victim may be re-identified from a social network even if the victim’s identity is preserved using the conventional anonymization techniques.
 * Solution: Any vertex in G cannot be re-identified in anonymized G with confidence larger than 1/k.
 
-### K-Neighborhood Anonymity
-* Based on: B. Zhou and J. Pei. Preserving privacy in social networks against neighborhood attacks
-* Adversary background knowledge: knows the neighbors of a target victim and the relationship among the neighbors.
-* Problem: The victim may be re-identified from a social network even if the victim’s identity is preserved using the conventional anonymization techniques.
-* Solution: Any vertex in G cannot be re-identified in anonymized G with confidence larger than 1/k.
+### K-Symmetry
+* Based on: Wu, Xiao, Wang, He and Wang, K-Symmetry model for Identify Anonymization in Social Networks
+* Adversary background knowledge: knows a combination of multiple easily obtained structural knowledge. 
+* Problem: it’s very difficult for the network data publishers to make such predication since there exists numerous possible structural knowledge. 
+A combination of multiple easily obtained structural knowledge could have quite strong descriptive power, which can re-identify a large fraction of individuals from the network. 
+So a K-anonymity model independent of structural knowledge use is necessary.
+* Solution: The general idea is to modify the network so that for each vertex v there exist at least k− 1 other vertices each of which serves as the image of v under some automorphism of the modified network. 
+Informally speaking, an automorphism of a network is a permutation on its vertices which preserves its vertex adjacency relationships.
 
 ## Data Sets  
 ### Facebook circles  
@@ -24,14 +27,14 @@ A simulator for preserving anonymity on social networks.
 * Nodes	4039   
 * Edges	88234  
 
+### Arxiv Collaboration network 
+* https://snap.stanford.edu/data/ca-GrQc.html  
+* Arxiv_collaboration_network.txt  
+* Nodes	5242  
+* Edges	28980
+
 ### Wiki votes  
 * https://snap.stanford.edu/data/wiki-Vote.html  
 * wiki-Vote.txt 
 * Nodes	7115  
-* Edges	103689  
-
-### Twitter circles  
-* https://snap.stanford.edu/data/egonets-Twitter.html  
-* twitter_combined.txt  
-* Nodes	81306  
-* Edges	1768149  
+* Edges	103689    
