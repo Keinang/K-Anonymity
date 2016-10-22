@@ -1,4 +1,4 @@
-# K-Anonymity 
+# K-Anonymity Simulator for Social Networks
 A simulator for preserving anonymity on social networks.
   
 ## How to run  
