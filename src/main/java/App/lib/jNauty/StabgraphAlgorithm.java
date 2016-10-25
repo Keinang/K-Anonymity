@@ -269,7 +269,7 @@ public class StabgraphAlgorithm {
     private List<Permutation> findAutomorphismsInner(List<SearchTreeNode<Vertex>> terminalNodes, List<Vertex> vertices, Map<Vertex, Set<Vertex>> vertexToNeighbors, Set<Edge> edges) {
         List<Permutation> ret = new ArrayList<Permutation>();
 
-        //calculate permutations
+        //calculate permutation
         List<Permutation> allPermutations = new ArrayList<Permutation>();
         for (SearchTreeNode<Vertex> node : terminalNodes) {
             Permutation p = permutation(node.getNodePartition(), vertices);
