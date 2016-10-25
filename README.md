@@ -1,7 +1,8 @@
 # K-Anonymity Simulator for Social Networks
 A simulator for preserving anonymity on social networks.
   
-## How to run  
+## How to run
+`mvn package`
 `mvn exec:java`
 
 ## Algorithms  
