@@ -6,7 +6,7 @@ import App.Controller.DataSetController;
 import App.Model.AlgoType;
 import App.Model.Graph;
 import org.apache.commons.lang.SerializationUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,7 +56,11 @@ public class AppFrame extends JFrame {
 
     @SuppressWarnings("ALL")
     public void initUIComponents() {
-        setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/icon.png")).getImage());
+        try {
+            setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/icon.png")).getImage());
+        }catch (Exception e){
+            logger.error(e);
+        }
 
         // set layout properties
         final Container contentPane = getContentPane();

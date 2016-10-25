@@ -1,12 +1,12 @@
 package App.Controller;
 
-import App.Common.IAlgorithm;
-import App.Model.Graph;
-import App.Model.DegreeContext;
 import App.Common.Exceptions.NotRealizedGraphException;
-import App.Model.Vertex;
+import App.Common.IAlgorithm;
 import App.Common.Utils.DegreeUtil;
 import App.Common.Utils.DemoDataCreator;
+import App.Model.DegreeContext;
+import App.Model.Graph;
+import App.Model.Vertex;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 

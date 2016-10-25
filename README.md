@@ -2,7 +2,7 @@
 A simulator for preserving anonymity on social networks.
   
 ## How to run  
-* Run Main.main()
+`mvn exec:java`
 
 ## Algorithms  
 ### K-Degree Generalization 
