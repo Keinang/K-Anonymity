@@ -28,8 +28,8 @@ Informally speaking, an automorphism of a network is a permutation on its vertic
 * **Edges**:	88234  
 
 ### Arxiv Collaboration network 
-* **URL:      https://snap.stanford.edu/data/ca-GrQc.html  
-* **File****:     Arxiv_collaboration_network.txt  
+* **URL**:      https://snap.stanford.edu/data/ca-GrQc.html
+* **File**:     Arxiv_collaboration_network.txt
 * **Nodes**:	5242  
 * **Edges**:	28980
 
