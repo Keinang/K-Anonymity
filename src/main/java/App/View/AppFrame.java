@@ -1,10 +1,10 @@
 package App.View;
 
+import App.Common.UITasks.DataSetLoaderTask;
 import App.Controller.AlgorithmController;
 import App.Controller.DataSetController;
 import App.Model.AlgoType;
 import App.Model.Graph;
-import App.Common.UITasks.DataSetLoaderTask;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -56,6 +56,8 @@ public class AppFrame extends JFrame {
 
     @SuppressWarnings("ALL")
     public void initUIComponents() {
+        setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/icon.png")).getImage());
+
         // set layout properties
         final Container contentPane = getContentPane();
         GroupLayout layout = new GroupLayout(contentPane);
@@ -68,7 +70,7 @@ public class AppFrame extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // execute button
-        executeStatusLabel = new JLabel();
+        executeStatusLabel = new JLabel(StringUtils.EMPTY);
         executeButton = new JButton(EXECUTE);
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -95,11 +97,8 @@ public class AppFrame extends JFrame {
                                 .addComponent(algorithmPanel)
 
                                 // level 2
-                                .addGroup(layout.createSequentialGroup()
-                                        .addComponent(executeButton)
-                                        .addComponent(executeStatusLabel)
-                                )
-
+                                .addComponent(executeButton)
+                                .addComponent(executeStatusLabel)
                         )
                         // column 1
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -130,8 +129,10 @@ public class AppFrame extends JFrame {
                                 )
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(executeButton)
-                                .addComponent(executeStatusLabel)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(executeStatusLabel)
+                                        .addComponent(executeButton)
+                                )
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(sp1)
@@ -177,7 +178,7 @@ public class AppFrame extends JFrame {
 
                 Graph anonymizeData = algorithmController.anonymize(algorithm, originalClone, Integer.valueOf(k));
 
-                if (anonymizeData != null){
+                if (anonymizeData != null) {
                     addViewToPanel(originalData, anonymizeData, msBeforeRun, algorithm, k, dataSet);
                 }
 

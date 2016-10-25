@@ -10,11 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 import static App.Controller.DataSetController.getDegreeFreq;
 
@@ -29,12 +25,11 @@ public class TableView extends JPanel {
     public static final String TOTAL_VERTICES = "Total Vertices";
     public static final String SIZE = "Size";
     public static final String PARTITIONS = "Partitions";
-    public static final String PROBABILITY_AFTER = "Probability after";
-    public static final String PROBABILITY_BEFORE = "Probability before";
+    public static final String PROBABILITY_AFTER = "after";
+    public static final String PROBABILITY_BEFORE = "before";
 
     // view params
     private String title;
-    private String dataSet;
 
     // runtime params
     private float duration = 0;
@@ -54,13 +49,12 @@ public class TableView extends JPanel {
 
         // time calculation
         long after = System.currentTimeMillis();
-        this.duration = (after - before) / 1000f;
+        this.duration = before < 1 ? 0 : ((after - before) / 1000f);
 
         // setting title
         if (StringUtils.isNotEmpty(algorithm) && StringUtils.isNotEmpty(k)) {
             this.title = String.format("%s anonymized with %s", k, algorithm);
         }
-        this.dataSet = dataSet;
 
         // init UI components
         setUI(anonymizedData);
@@ -97,21 +91,22 @@ public class TableView extends JPanel {
         int total = vertices.size();
         for (Vertex v : vertices) {
             Double sum = map.get(v);
-            if (sum == null){
-                sum = 0.0;
+            Double totalValue = 0.0;
+            if (sum != null) {
+                totalValue = Precision.round(sum / total, 4);
             }
-            map.put(v, Precision.round(sum / total, 2));
+            map.put(v, totalValue);
         }
     }
 
     private void updateMap(Vertex v, Map<Vertex, Double> map) {
-        Double beforeValue = map.get(v);
-        if (beforeValue == null) {
-            beforeValue = 1.0;
+        Double val = map.get(v);
+        if (val == null) {
+            val = 1.0;
         } else {
-            beforeValue++;
+            val++;
         }
-        map.put(v, beforeValue);
+        map.put(v, val);
     }
 
     private void setUI(Graph dataSetModel) {
@@ -122,12 +117,7 @@ public class TableView extends JPanel {
         // add tables
         JScrollPane degreeToVerticesPane = addDegreeToVerticesTable(dataSetModel);
         JScrollPane vertexToVerticesPane = addVertexToVerticesTable(dataSetModel);
-        JScrollPane partitionsPane = new JScrollPane();
-
-        if (this.partitions != null) {
-            partitionsPane = addParitionsTable(dataSetModel);
-        }
-
+        JScrollPane partitionsPane = addParititonsTable();
         JPanel indicationsPanel = addIndicationPanel(dataSetModel);
 
         layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -230,10 +220,14 @@ public class TableView extends JPanel {
         return createTable(this.title, rowData, columnNames);
     }
 
-    private JScrollPane addParitionsTable(Graph dataSetModel) {
-        Object[][] rowData = preparePartitionsModel(this.partitions);
-        Object columnNames[] = {SIZE, PARTITIONS};
-        return createTable(this.title, rowData, columnNames);
+    private JScrollPane addParititonsTable() {
+        if (this.partitions != null) {
+            Object[][] rowData = preparePartitionsModel(this.partitions);
+            Object columnNames[] = {SIZE, PARTITIONS};
+            return createTable(this.title, rowData, columnNames);
+        } else {
+            return new JScrollPane();
+        }
     }
 
     private Object[][] preparePartitionsModel(List<List<Vertex>> partitions) {
@@ -259,23 +253,13 @@ public class TableView extends JPanel {
             }
         };
 
-        JTable table = new JTable(model) {
-
-            @Override
-            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-                Component component = super.prepareRenderer(renderer, row, column);
-                int rendererWidth = component.getPreferredSize().width;
-                TableColumn tableColumn = getColumnModel().getColumn(column);
-                tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-                return component;
-            }
-        };
+        JTable table = new JTable(model);
         this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title, TitledBorder.CENTER, TitledBorder.TOP));
         table.setPreferredScrollableViewportSize(table.getPreferredSize());
         table.setFillsViewportHeight(true);
         //table.setAutoCreateRowSorter(true);
         //table.getRowSorter().toggleSortOrder(0);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         // add the scroll pane wrapper:
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setVisible(true);
@@ -286,27 +270,27 @@ public class TableView extends JPanel {
         Map<Vertex, Set<Vertex>> vertexToNeighbors = dataSetToModel.getVertexToNeighbors();
         Set<Vertex> vertices = vertexToNeighbors.keySet();
         Iterator<Vertex> iterator = vertices.iterator();
-        Object rowData[][] = new Object[vertices.size()][2];
+        Object rowData[][] = new Object[vertices.size()][3];
 
         int i = 0;
         while (iterator.hasNext()) {
             Vertex vertex = iterator.next();
             Set<Vertex> verticesNeighborsSet = vertexToNeighbors.get(vertex);
-
-            Double afterProp = 0.0;
-            if (vertexAfterToSameDegree != null) {
-                afterProp = vertexAfterToSameDegree.get(vertex);
-            }
-
-            Double beforeProp = 0.0;
-            if (vertexBeforeToSameDegree != null) {
-                beforeProp = vertexBeforeToSameDegree.get(vertex);
-            }
-
+            Double beforeProp = getObfuscationValue(vertex, vertexBeforeToSameDegree);
+            Double afterProp = getObfuscationValue(vertex, vertexAfterToSameDegree);
             rowData[i] = new Object[]{vertex.getName(), beforeProp, afterProp, Arrays.toString(verticesNeighborsSet.toArray())};
             i++;
         }
         return rowData;
+    }
+
+    private Double getObfuscationValue(Vertex vertex, Map<Vertex, Double> map) {
+        Double val = map.get(vertex);
+        if (val != null) {
+            return val;
+        } else {
+            return 0.0;
+        }
     }
 
     private Object[][] prepareDegreeToVerticesModel(Graph dataSetToModel) {
