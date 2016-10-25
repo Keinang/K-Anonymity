@@ -4,7 +4,7 @@ import App.Common.Utils.DegreeUtil;
 import App.Model.Edge;
 import App.Model.Graph;
 import App.Model.Vertex;
-import javafx.util.Pair;
+import org.apache.commons.math3.util.Pair;
 import org.apache.log4j.Logger;
 
 import java.util.*;
