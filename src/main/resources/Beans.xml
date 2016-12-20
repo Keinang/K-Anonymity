@@ -7,11 +7,11 @@
     <context:annotation-config/>
 
     <bean id="FileUtil" class="App.Common.Utils.FileUtil"/>
-    <bean id="DataSetController" class="App.Controller.DataSetController"/>
+    <bean id="DataSetController" class="App.Datasets.DataSetController"/>
     <bean id="AppFrame" class="App.View.AppFrame"/>
-    <bean id="kdegree" class="App.Controller.KDegree"/>
-    <bean id="ksymmetry" class="App.Controller.KSymmetry"/>
-    <bean id="algorithmController" class="App.Controller.AlgorithmController"/>
+    <bean id="kdegree" class="App.Algorithm.KDegree"/>
+    <bean id="ksymmetry" class="App.Algorithm.KSymmetry"/>
+    <bean id="algorithmController" class="App.Algorithm.AlgorithmController"/>
     <bean id="jNauty" class="App.lib.jNauty.McKayGraphLabelingAlgorithm"/>
     <bean id="stabgraphAlgorithm" class="App.lib.jNauty.StabgraphAlgorithm"/>
 

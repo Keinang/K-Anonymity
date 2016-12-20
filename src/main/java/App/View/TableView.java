@@ -12,7 +12,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.util.*;
 
-import static App.Controller.DataSetController.getDegreeFreq;
+import static App.Datasets.DataSetController.getDegreeFreq;
 
 /**
  * Created by Keinan.Gilad on 9/19/2016.

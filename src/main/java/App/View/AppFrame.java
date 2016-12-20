@@ -1,8 +1,8 @@
 package App.View;
 
 import App.Common.UITasks.DataSetLoaderTask;
-import App.Controller.AlgorithmController;
-import App.Controller.DataSetController;
+import App.Algorithm.AlgorithmController;
+import App.Datasets.DataSetController;
 import App.Model.AlgoType;
 import App.Model.Graph;
 import org.apache.commons.lang.SerializationUtils;

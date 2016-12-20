@@ -1,10 +1,8 @@
-package App.Controller;
+package App.Algorithm;
 
-import App.Common.IAlgorithm;
 import App.Common.Utils.DemoDataCreator;
 import App.Model.Graph;
 import App.Model.Vertex;
-import App.lib.jNauty.McKayGraphLabelingAlgorithm;
 import App.lib.jNauty.StabgraphAlgorithm;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -22,14 +20,11 @@ public class KSymmetry implements IAlgorithm {
     private static Logger logger = Logger.getLogger(KSymmetry.class);
 
     @Autowired
-    private McKayGraphLabelingAlgorithm jNauty;
-
-    @Autowired
-    private StabgraphAlgorithm stabgraphAlgorithm;
+    protected StabgraphAlgorithm stabgraphAlgorithm;
 
     @Override
     public Graph anonymize(Graph graph, Integer k) {
-        // 1. fetch orbits from the graph by jNauty algorithm (McKay).
+        // 1. fetch orbits from the graph by stabgraphAlgorithm algorithm (McKay).
         logger.debug("Start to findAutomorphisms");
         List<List<Vertex>> orbits = stabgraphAlgorithm.getCyclicRepresenatation(graph);
         if (orbits == null) {
@@ -141,23 +136,5 @@ public class KSymmetry implements IAlgorithm {
         }
 
         return sb.append(name).toString();
-    }
-
-    public static void main(String[] args) {
-        BasicConfigurator.configure();
-
-        KSymmetry algo = new KSymmetry();
-        algo.jNauty = new McKayGraphLabelingAlgorithm();
-        algo.stabgraphAlgorithm = new StabgraphAlgorithm();
-
-        // k=2
-        //Graph anonymize = algo.anonymize(DemoDataCreator.generateGraphSymmetry(), 2);
-        //System.out.println(anonymize.getVertices().size());
-        //System.out.println(anonymize.getVertices());
-
-        // k=3
-        Graph anonymize = algo.anonymize(DemoDataCreator.generateGraphSymmetry(), 3);
-        System.out.println(anonymize.getVertices().size());
-        System.out.println(anonymize.getVertices());
     }
 }

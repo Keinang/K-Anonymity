@@ -1,4 +1,4 @@
-package App.Controller;
+package App.Algorithm;
 
 import App.Model.AlgoType;
 import App.Model.Graph;

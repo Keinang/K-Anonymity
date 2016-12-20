@@ -1,7 +1,6 @@
-package App.Controller;
+package App.Algorithm;
 
 import App.Common.Exceptions.NotRealizedGraphException;
-import App.Common.IAlgorithm;
 import App.Common.Utils.DegreeUtil;
 import App.Common.Utils.DemoDataCreator;
 import App.Model.DegreeContext;
@@ -74,7 +73,7 @@ public class KDegree implements IAlgorithm {
      * @param originalGraph - original model
      * @return the original vector of degrees sort desc.
      */
-    private DegreeContext[] getDegreeVector(Graph originalGraph) {
+    protected DegreeContext[] getDegreeVector(Graph originalGraph) {
         DegreeContext[] result = new DegreeContext[originalGraph.getVertices().size()];
         List<DegreeContext> degreeContexts = DegreeUtil.sortByDegree(originalGraph);
         return degreeContexts.toArray(result);
@@ -280,28 +279,5 @@ public class KDegree implements IAlgorithm {
                 throw new NotRealizedGraphException("Additional Graph contain minus degree");
             }
         }
-    }
-
-    public static void main(String[] agrs) {
-        BasicConfigurator.configure();
-
-        Graph originalGraph = DemoDataCreator.generateRandomGraph();
-        KDegree kDegreeAlgo = new KDegree();
-
-        int k = 5;
-
-        DegreeContext[] originalDegreeVector = kDegreeAlgo.getDegreeVector(originalGraph);
-        System.out.println(Arrays.toString(originalDegreeVector));
-
-        /*
-        DegreeContext[] anonymizeDegreeVector = kDegreeAlgo.degreeAnonymization(originalDegreeVector, k);
-        System.out.println(Arrays.toString(anonymizeDegreeVector));
-
-        kDegreeAlgo.createAdditionalDegreeVector(originalDegreeVector, anonymizeDegreeVector);
-        System.out.println(Arrays.toString(anonymizeDegreeVector));*/
-        Graph anonymize = kDegreeAlgo.anonymize(originalGraph, k);
-
-        DegreeContext[] anonymizedDegreeVector = kDegreeAlgo.getDegreeVector(anonymize);
-        System.out.println(Arrays.toString(anonymizedDegreeVector));
     }
 }

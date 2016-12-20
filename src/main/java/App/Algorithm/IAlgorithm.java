@@ -1,4 +1,4 @@
-package App.Common;
+package App.Algorithm;
 
 import App.Model.Graph;
 

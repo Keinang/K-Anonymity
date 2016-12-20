@@ -1,6 +1,6 @@
 package App.Common.UITasks;
 
-import App.Controller.DataSetController;
+import App.Datasets.DataSetController;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
