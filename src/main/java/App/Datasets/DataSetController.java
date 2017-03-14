@@ -19,7 +19,7 @@ public class DataSetController {
     public static final String WIKI_VOTE_FILE = "/DataSets/wiki-Vote.txt";
     public static final String TWITTER_CIRCLES = "Twitter circles";
     public static final String TWITTER_COMBINED_FILE = "/DataSets/twitter_combined.txt";
-    public static final String ARXIV = "Arxiv Collaboration Network";
+    public static final String ARXIV = "ArXiv Collaboration Network";
     public static final String ARXIV_FILE = "/DataSets/Arxiv_collaboration_network.txt";
 
     @Autowired

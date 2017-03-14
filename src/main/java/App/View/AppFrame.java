@@ -24,6 +24,8 @@ import java.util.List;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class AppFrame extends JFrame {
+    public static final String FILE = "File";
+    public static final String ABOUT = "About";
     private static Logger logger = Logger.getLogger(AppFrame.class);
     public static final String RUNNING = "Running...";
     public static final String INITIALIZING = "Initializing...";
@@ -146,8 +148,8 @@ public class AppFrame extends JFrame {
         );
 
         MenuBar menubar = new MenuBar();
-        final Menu fileMenu = new Menu("File");
-        final MenuItem aboutItem = new MenuItem("About");
+        final Menu fileMenu = new Menu(FILE);
+        final MenuItem aboutItem = new MenuItem(ABOUT);
         aboutItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -199,7 +201,7 @@ public class AppFrame extends JFrame {
     }
 
     private void addViewToPanel(Graph originalData, Graph anonymizedData, long before, String algorithm, String k, String dataset) {
-        TableView table = new TableView(anonymizedData, originalData, before, algorithm, k, dataset);
+        TableView table = new TableView(anonymizedData, originalData, before, algorithm, k);
         JPanel chartPanel = (JPanel) dataSetToChartPanel.get(dataset);
         chartPanel.add(table);
         chartPanel.revalidate();
@@ -286,8 +288,8 @@ public class AppFrame extends JFrame {
 
             // init the chart
             JPanel chartsPanel = new JPanel();
-            chartsPanel.setPreferredSize(new Dimension(500, 500));
-            chartsPanel.setLayout(new GridLayout(0, 3));
+            chartsPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+            chartsPanel.setLayout(new GridLayout(4, 2));
             chartsPanel.setAutoscrolls(true);
             dataSetToChartPanel.put(dataSet, chartsPanel);
 
