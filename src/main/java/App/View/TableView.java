@@ -6,11 +6,12 @@ import App.Model.Vertex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Precision;
 import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.util.*;
-import java.util.List;
+
 import static App.Datasets.DataSetController.getDegreeFreq;
 
 /**
@@ -24,7 +25,8 @@ public class TableView extends JPanel {
     public static final String TOTAL_VERTICES = "Total Vertices";
     public static final String SIZE = "Size";
     public static final String PARTITIONS = "Partitions";
-    public static final String PROBABILITY_AFTER = "Degree similarity";
+    public static final String SIMILARITY_PERCENTAGE = "Degree Similarity (%)";
+    public static final String DEGREE_OF_ENTROPY_IOI = "Entropy";
 
     // view params
     private String title;
@@ -34,8 +36,11 @@ public class TableView extends JPanel {
     private int verticesAdded;
     private int edgeAdded;
     private List<List<Vertex>> partitions;
+    private Graph originalGraph = null;
 
     public TableView(Graph anonymizedData, Graph originalData, long before, String algorithm, String k) {
+        originalGraph = originalData;
+
         // diff
         this.edgeAdded = anonymizedData.getEdges().size() - originalData.getEdges().size();
         this.verticesAdded = anonymizedData.getVertices().size() - originalData.getVertices().size();
@@ -62,32 +67,37 @@ public class TableView extends JPanel {
         // add tables
         Map<Integer, Integer> degreeToCount = calculateDegreeToCount(dataSetModel);
         JScrollPane degreeToVerticesPane = addDegreeToVerticesTable(degreeToCount);
-
         JScrollPane vertexToVerticesPane = addVertexToVerticesTable(dataSetModel, degreeToCount);
-
-        JScrollPane partitionsPane = new JScrollPane();
-        if (this.partitions != null) {
-            partitionsPane = addParititonsTable();
-        }
-
         JPanel indicationsPanel = addIndicationPanel(dataSetModel);
 
-        layout.setHorizontalGroup(layout.createSequentialGroup()
-                .addComponent(degreeToVerticesPane)
-                .addComponent(vertexToVerticesPane)
-                .addComponent(partitionsPane)
-                .addComponent(indicationsPanel)
-        );
+        if (this.partitions != null) {
+            JScrollPane partitionsPane = addParititonsTable();
+            layout.setHorizontalGroup(layout.createSequentialGroup()
+                    .addComponent(degreeToVerticesPane)
+                    .addComponent(vertexToVerticesPane)
+                    .addComponent(partitionsPane)
+                    .addComponent(indicationsPanel)
+            );
 
-        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(degreeToVerticesPane)
-                .addComponent(vertexToVerticesPane)
-                .addComponent(partitionsPane)
-                .addComponent(indicationsPanel)
-        );
+            layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(degreeToVerticesPane)
+                    .addComponent(vertexToVerticesPane)
+                    .addComponent(partitionsPane)
+                    .addComponent(indicationsPanel)
+            );
+        } else {
+            layout.setHorizontalGroup(layout.createSequentialGroup()
+                    .addComponent(degreeToVerticesPane)
+                    .addComponent(vertexToVerticesPane)
+                    .addComponent(indicationsPanel)
+            );
 
-        repaint();
-        revalidate();
+            layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(degreeToVerticesPane)
+                    .addComponent(vertexToVerticesPane)
+                    .addComponent(indicationsPanel)
+            );
+        }
     }
 
     private Map<Integer, Integer> calculateDegreeToCount(Graph dataSetModel) {
@@ -176,7 +186,7 @@ public class TableView extends JPanel {
     @NotNull
     private JScrollPane addVertexToVerticesTable(Graph dataSetModel, Map<Integer, Integer> degreeToCount) {
         Object[][] rowData = prepareVertexToVerticesModel(dataSetModel, degreeToCount);
-        Object columnNames[] = {VERTEX, DEGREE, PROBABILITY_AFTER, VERTICES};
+        Object columnNames[] = {VERTEX, DEGREE, SIMILARITY_PERCENTAGE, DEGREE_OF_ENTROPY_IOI, VERTICES};
         return createTable(this.title, rowData, columnNames);
     }
 
@@ -209,7 +219,7 @@ public class TableView extends JPanel {
         DefaultTableModel model = new DefaultTableModel(rowData, columnNames) {
             @Override
             public Class getColumnClass(int column) {
-                if (column < 3) {
+                if (column < 4) {
                     return Integer.class;
                 }
                 return String.class;
@@ -222,7 +232,7 @@ public class TableView extends JPanel {
         table.setFillsViewportHeight(true);
         table.setAutoCreateRowSorter(true);
         table.getRowSorter().toggleSortOrder(0);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        //table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         // add the scroll pane wrapper:
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setVisible(true);
@@ -240,15 +250,38 @@ public class TableView extends JPanel {
             Vertex vertex = iterator.next();
             Set<Vertex> verticesNeighborsSet = vertexToNeighbors.get(vertex);
             int degree = verticesNeighborsSet.size();
-            Double afterProp = getObfuscationValue(degree, degreeToCount);
-            rowData[i] = new Object[]{vertex.getName(), degree, afterProp, Arrays.toString(verticesNeighborsSet.toArray())};
+            Double similarityPercentage = getObfuscationValue(degree, degreeToCount);
+            Double entropyDegree = calculateEntropy(vertex, degreeToCount, vertices.size());
+            rowData[i] = new Object[]{vertex.getName(), degree, similarityPercentage, entropyDegree, Arrays.toString(verticesNeighborsSet.toArray())};
             i++;
         }
         return rowData;
     }
 
+    private Double calculateEntropy(Vertex vertex, Map<Integer, Integer> degreeToCount, int totalVertices) {
+        Map<Vertex, Set<Vertex>> vertexToNeighbors = this.originalGraph.getVertexToNeighbors();
+        if (vertexToNeighbors.containsKey(vertex)){
+            int originalDegree = vertexToNeighbors.get(vertex).size();
+            if (degreeToCount.containsKey(originalDegree)){
+                int anonymitySet = degreeToCount.get(originalDegree);
+                if (anonymitySet > 0){
+                    double hx = 0.0;
+                    double sum = 0.0;
+                    double pi = Precision.round(1.0 / anonymitySet, 10);
+                    for (int i = 0; i < anonymitySet; i++) {
+                        sum += pi * Math.log(pi);
+                    }
+                    hx = -sum;
+                    double hM = Math.log(totalVertices);
+                    return Precision.round(hx / hM, 3);
+                }
+            }
+        }
+        return 1.0;
+    }
+
     private Double getObfuscationValue(int degree, Map<Integer, Integer> degreeToCount) {
-        Double d =  (1.0 / degreeToCount.get(degree) * 100.0f);
+        Double d = (1.0 / degreeToCount.get(degree) * 100.0f);
         return Precision.round(d, 2);
     }
 
