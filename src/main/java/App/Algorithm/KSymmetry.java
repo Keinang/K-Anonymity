@@ -1,10 +1,8 @@
 package App.Algorithm;
 
-import App.Common.Utils.DemoDataCreator;
 import App.Model.Graph;
 import App.Model.Vertex;
 import App.lib.jNauty.StabgraphAlgorithm;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 

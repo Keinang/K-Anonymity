@@ -24,7 +24,11 @@ import java.util.List;
  * Created by Keinan.Gilad on 9/10/2016.
  */
 public class AppFrame extends JFrame {
-    public static final String FILE = "File";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8898478127090420365L;
+	public static final String FILE = "File";
     public static final String ABOUT = "About";
     private static Logger logger = Logger.getLogger(AppFrame.class);
     public static final String RUNNING = "Running...";

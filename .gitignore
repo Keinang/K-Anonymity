@@ -2,3 +2,6 @@
 target
 K-Anonymity.iml
 src/test/
+.settings
+.project
+.classpath

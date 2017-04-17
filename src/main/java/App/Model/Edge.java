@@ -7,7 +7,11 @@ import java.io.Serializable;
  */
 public class Edge implements Serializable {
 
-    private Vertex v0;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -334495359457652758L;
+	private Vertex v0;
     private Vertex v1;
     private boolean isForward;//used for K-Neighborhood algorithm.
 

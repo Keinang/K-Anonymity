@@ -8,7 +8,11 @@ import java.util.*;
  */
 public class Graph implements Serializable {
 
-    private Set<Edge> edges;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2193295438102861321L;
+	private Set<Edge> edges;
     private List<Vertex> vertices;
     private Map<Vertex, Set<Vertex>> vertexToNeighbors;
     // relevant for K-Symmetry

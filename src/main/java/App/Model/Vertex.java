@@ -6,7 +6,11 @@ import java.io.Serializable;
  * Created by Keinan.Gilad on 9/18/2016.
  */
 public class Vertex implements Serializable {
-    private String name;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -863722503598895395L;
+	private String name;
 
     public Vertex(String name) {
         this.name = name;
