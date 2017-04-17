@@ -3,18 +3,14 @@ package App.View;
 import App.Common.Utils.DemoDataCreator;
 import App.Model.Graph;
 import App.Model.Vertex;
-import com.intellij.vcs.log.ui.frame.WrappedFlowLayout;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Precision;
 import org.jetbrains.annotations.NotNull;
-
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.util.*;
 import java.util.List;
-
 import static App.Datasets.DataSetController.getDegreeFreq;
 
 /**
